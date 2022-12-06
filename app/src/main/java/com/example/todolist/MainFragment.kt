@@ -1,14 +1,16 @@
 package com.example.todolist
 
 import android.annotation.SuppressLint
+import android.content.ClipData
+import android.content.ClipboardManager
 import android.content.Context
+import android.content.Context.CLIPBOARD_SERVICE
 import android.content.SharedPreferences
 import android.net.ConnectivityManager
 import android.net.NetworkCapabilities
 import android.os.Bundle
-import android.view.LayoutInflater
-import android.view.View
-import android.view.ViewGroup
+import android.view.*
+import android.widget.Toast
 import androidx.fragment.app.Fragment
 import com.example.todolist.databinding.FragmentMainBinding
 import com.google.firebase.FirebaseApp
@@ -23,7 +25,7 @@ import com.google.gson.Gson
 import java.util.*
 
 
-class MainFragment : Fragment() {
+class MainFragment : Fragment(){
 
     private lateinit var binding: FragmentMainBinding
     private lateinit var adapter: ToDoAdapter
@@ -33,6 +35,10 @@ class MainFragment : Fragment() {
 
     private var localData:DatabaseData? = null
     private var dataInFirebase:DatabaseData? = null
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        setHasOptionsMenu(true)
+    }
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         binding = FragmentMainBinding.inflate(inflater, container, false)
         adapter = ToDoAdapter{ saveData() }
@@ -45,10 +51,6 @@ class MainFragment : Fragment() {
         adapter.setData(localData?.listTodo)
 
         initApp()
-
-        database = Firebase.database("https://todo-b94ed-default-rtdb.firebaseio.com")
-
-        checkForInternet()
 
         Firebase.auth.signInAnonymously().addOnSuccessListener { it->
             uid = sharedPreferences.getString("uid", null) ?: it.user?.uid!!
@@ -83,49 +85,77 @@ class MainFragment : Fragment() {
         firebaseAppCheck.installAppCheckProviderFactory(
             SafetyNetAppCheckProviderFactory.getInstance()
         )
+        database = Firebase.database("https://todo-b94ed-default-rtdb.firebaseio.com")
+        checkForInternet()
     }
 
     private fun saveData(){
         checkForInternet()
         database.getReference("data").child(uid).setValue(adapter.getDatabaseData(getCurrentTime())).addOnCompleteListener { checkForInternet() }
     }
+
+    override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
+        inflater.inflate(R.menu.main_menu,menu)
+        super.onCreateOptionsMenu(menu, inflater)
+    }
+
     override fun onPause() {
         sharedPreferences.edit().putString("history",adapter.toJson()).apply()
         runCatching {
             if (localData?.dateLastEdit!! > dataInFirebase?.dateLastEdit!!)
                 saveData()
         }
-
         super.onPause()
     }
 
     @SuppressLint("ServiceCast")
     private fun checkForInternet() {
+        fun setVisible(){ binding.imageNoEthernet.visibility = View.VISIBLE }
         // register activity with the connectivity manager service
         val connectivityManager = context?.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
 
         // Returns a Network object corresponding to
         // the currently active default data network.
-        val network = connectivityManager.activeNetwork
-        if (network == null) {
-            binding.imageNoEthernet.visibility = View.VISIBLE
-            return
-        }
+        val network = connectivityManager.activeNetwork ?: return setVisible()
         // Representation of the capabilities of an active network.
-        val activeNetwork = connectivityManager.getNetworkCapabilities(network)
-        if (activeNetwork == null ) {
-            binding.imageNoEthernet.visibility = View.VISIBLE
-            return
-        }
+        val activeNetwork = connectivityManager.getNetworkCapabilities(network) ?:return setVisible()
         if (activeNetwork.hasTransport(NetworkCapabilities.TRANSPORT_WIFI) ||
             activeNetwork.hasTransport(NetworkCapabilities.TRANSPORT_CELLULAR))
             binding.imageNoEthernet.visibility = View.GONE
-        else binding.imageNoEthernet.visibility = View.VISIBLE
-
+        else setVisible()
     }
 
     companion object{
         fun getCurrentTime() = Calendar.getInstance().time.time
     }
 
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        val clipBoardManager = context?.getSystemService(CLIPBOARD_SERVICE) as ClipboardManager
+        when (item.itemId){
+            R.id.export_id->{
+                val clip = ClipData.newPlainText("xdd", uid)
+                clipBoardManager.setPrimaryClip(ClipData(clip))
+                makeToast("Ключ скопирован в буфер обмена")
+            }
+            R.id.import_id->{
+                runCatching {
+                    makeToast("Поиск ключа в буфере обмена..")
+                    val clipData = clipBoardManager.primaryClip?.getItemAt(0)?.text.toString()
+                    uid = clipData
+                    sharedPreferences.edit().putString("uid",clipData).apply()
+                    database.getReference("data").child(uid).get()
+                        .addOnCompleteListener {
+                            val tempDataInFirebase = it.result.getValue<DatabaseData>()
+                            checkForInternet()
+                            if (tempDataInFirebase?.dateLastEdit == null) return@addOnCompleteListener
+                            adapter.setData(tempDataInFirebase.listTodo)
+                        }
+                }.getOrElse { makeToast("Что-то пошло не так") }
+            }
+        }
+        return true
+    }
+    private fun makeToast(message:String){
+        Toast.makeText(requireContext(),message,Toast.LENGTH_LONG).show()
+    }
 }

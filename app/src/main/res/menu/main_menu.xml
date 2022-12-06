@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+        <item
+            android:title="@string/export_id_title"
+            android:id="@+id/export_id"
+            app:showAsAction="never"
+            android:orderInCategory="0"/>
+        <item
+            android:title="@string/import_id_title"
+            android:id="@+id/import_id"
+            app:showAsAction="never"
+            android:orderInCategory="1"/>
+
+</menu>
