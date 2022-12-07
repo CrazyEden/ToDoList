@@ -51,7 +51,18 @@ class MainFragment : Fragment(){
         adapter.setData(localData?.listTodo)
 
         initApp()
+        signIn()
 
+        binding.buttonAdd.setOnClickListener {
+            if(binding.textView.text.isNullOrEmpty()) return@setOnClickListener
+            adapter.addData(Todo(binding.textView.text.toString()))
+            saveData()
+            binding.textView.text.clear()
+        }
+        return binding.root
+    }
+
+    private fun signIn() {
         Firebase.auth.signInAnonymously().addOnSuccessListener { it->
             uid = sharedPreferences.getString("uid", null) ?: it.user?.uid!!
             println("UID = $uid")
@@ -68,15 +79,6 @@ class MainFragment : Fragment(){
                     else saveData()
                 }
         }
-
-
-        binding.buttonAdd.setOnClickListener {
-            if(binding.textView.text.isNullOrEmpty()) return@setOnClickListener
-            adapter.addData(Todo(binding.textView.text.toString()))
-            saveData()
-            binding.textView.text.clear()
-        }
-        return binding.root
     }
 
     private fun initApp() {
@@ -151,6 +153,9 @@ class MainFragment : Fragment(){
                             adapter.setData(tempDataInFirebase.listTodo)
                         }
                 }.getOrElse { makeToast("Что-то пошло не так") }
+            }
+            R.id.reset_id->{
+                sharedPreferences.edit().remove("uid").apply()
             }
         }
         return true

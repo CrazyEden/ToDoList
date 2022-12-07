@@ -3,5 +3,5 @@
     <string name="todo">Todo..</string>
     <string name="export_id_title">export</string>
     <string name="import_id_title">import</string>
-    <string name="reset_id_title">to default settings</string>
+    <string name="reset_id_title">reset</string>
 </resources>
