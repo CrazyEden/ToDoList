@@ -13,6 +13,8 @@ import android.view.*
 import android.widget.Toast
 import androidx.fragment.app.Fragment
 import com.example.todolist.databinding.FragmentMainBinding
+import com.google.android.gms.auth.api.identity.BeginSignInRequest
+import com.google.android.gms.auth.api.identity.Identity
 import com.google.firebase.FirebaseApp
 import com.google.firebase.appcheck.FirebaseAppCheck
 import com.google.firebase.appcheck.safetynet.SafetyNetAppCheckProviderFactory
@@ -63,8 +65,19 @@ class MainFragment : Fragment(){
     }
 
     private fun signIn() {
-        Firebase.auth.signInAnonymously().addOnSuccessListener { it->
-            uid = sharedPreferences.getString("uid", null) ?: it.user?.uid!!
+        val oneTapClient = Identity.getSignInClient(requireActivity())
+        val signInRequest = BeginSignInRequest.builder()
+            .setGoogleIdTokenRequestOptions(
+                BeginSignInRequest.GoogleIdTokenRequestOptions.builder()
+                    .setSupported(true)
+                    // Your server's client ID, not your Android client ID.
+                    .setServerClientId(getString(R.string.id))
+                    // Only show accounts previously used to sign in.
+                    .setFilterByAuthorizedAccounts(true)
+                    .build())
+            .build()
+        oneTapClient.beginSignIn(signInRequest).addOnSuccessListener { it ->
+            uid = sharedPreferences.getString("uid", null) ?: it.pendingIntent.creatorUid.toString()
             println("UID = $uid")
             database.getReference("data").child(uid).get()
                 .addOnCompleteListener {
@@ -79,6 +92,22 @@ class MainFragment : Fragment(){
                     else saveData()
                 }
         }
+//        Firebase.auth.signInAnonymously().addOnSuccessListener { it->
+//            uid = sharedPreferences.getString("uid", null) ?: it.user?.uid!!
+//            println("UID = $uid")
+//            database.getReference("data").child(uid).get()
+//                .addOnCompleteListener {
+//                    dataInFirebase = it.result.getValue<DatabaseData>()
+//                    checkForInternet()
+//                    if (dataInFirebase?.dateLastEdit == null) return@addOnCompleteListener
+//                    if (localData?.dateLastEdit == null)
+//                        return@addOnCompleteListener adapter.setData(dataInFirebase?.listTodo)
+//                    adapter.setData(dataInFirebase?.listTodo)
+//                    if (localData?.dateLastEdit!! < dataInFirebase?.dateLastEdit!!)
+//                        adapter.setData(dataInFirebase?.listTodo)
+//                    else saveData()
+//                }
+//        }
     }
 
     private fun initApp() {

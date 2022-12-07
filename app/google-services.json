@@ -1,6 +1,7 @@
 {
   "project_info": {
     "project_number": "745751765961",
+    "firebase_url": "https://todo-b94ed-default-rtdb.firebaseio.com",
     "project_id": "todo-b94ed",
     "storage_bucket": "todo-b94ed.appspot.com"
   },
@@ -13,6 +14,14 @@
         }
       },
       "oauth_client": [
+        {
+          "client_id": "745751765961-vhjif55drtm30ob1sq9aqergnsfnu7oi.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.todolist",
+            "certificate_hash": "744b1d034bfdba80318f4b7c2990a105c1b9f582"
+          }
+        },
         {
           "client_id": "745751765961-8nv8d2l87ansjtiltpr0mvd568krki2s.apps.googleusercontent.com",
           "client_type": 3
