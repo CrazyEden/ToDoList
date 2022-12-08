@@ -4,7 +4,6 @@
     <string name="export_id_title">export</string>
     <string name="import_id_title">import</string>
     <string name="reset_id_title">reset</string>
-    <string name="id">696381024372-453jfa8045m5j525ipvg0d6viskrt8lc.apps.googleusercontent.com</string>
     <string name="title_activity_login">LoginActivity</string>
     <string name="prompt_email">Email</string>
     <string name="prompt_password">Password</string>
@@ -14,4 +13,6 @@
     <string name="invalid_username">Not a valid username</string>
     <string name="invalid_password">Password must be >5 characters</string>
     <string name="login_failed">"Login failed"</string>
+    <string name="google">google</string>
+    <string name="anonymous">anonymous</string>
 </resources>

@@ -1,6 +1,5 @@
 package com.example.todolist
 
-import android.annotation.SuppressLint
 import android.content.ClipData
 import android.content.ClipboardManager
 import android.content.Context
@@ -13,12 +12,6 @@ import android.view.*
 import android.widget.Toast
 import androidx.fragment.app.Fragment
 import com.example.todolist.databinding.FragmentMainBinding
-import com.google.android.gms.auth.api.identity.BeginSignInRequest
-import com.google.android.gms.auth.api.identity.Identity
-import com.google.firebase.FirebaseApp
-import com.google.firebase.appcheck.FirebaseAppCheck
-import com.google.firebase.appcheck.safetynet.SafetyNetAppCheckProviderFactory
-import com.google.firebase.auth.ktx.auth
 import com.google.firebase.database.*
 import com.google.firebase.database.ktx.database
 import com.google.firebase.database.ktx.getValue
@@ -43,17 +36,24 @@ class MainFragment : Fragment(){
     }
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         binding = FragmentMainBinding.inflate(inflater, container, false)
-        adapter = ToDoAdapter{ saveData() }
+        initVars()
         binding.rcView.adapter = adapter
-
-        sharedPreferences = requireContext().getSharedPreferences("data", Context.MODE_PRIVATE)
-        val json = sharedPreferences.getString("history",null)
-        localData = Gson().fromJson(json, DatabaseData::class.java) ?: null
-
         adapter.setData(localData?.listTodo)
 
-        initApp()
-        signIn()
+        database.getReference("data").child(uid).get()
+            .addOnCompleteListener {
+                dataInFirebase = it.result.getValue<DatabaseData>()
+                checkForInternet()
+                if (dataInFirebase?.dateLastEdit == null) return@addOnCompleteListener
+                if (localData?.dateLastEdit == null)
+                    return@addOnCompleteListener adapter.setData(dataInFirebase?.listTodo)
+                adapter.setData(dataInFirebase?.listTodo)
+                if (localData?.dateLastEdit!! < dataInFirebase?.dateLastEdit!!)
+                    adapter.setData(dataInFirebase?.listTodo)
+                else saveData()
+            }
+
+        checkForInternet()
 
         binding.buttonAdd.setOnClickListener {
             if(binding.textView.text.isNullOrEmpty()) return@setOnClickListener
@@ -64,60 +64,14 @@ class MainFragment : Fragment(){
         return binding.root
     }
 
-    private fun signIn() {
-        val oneTapClient = Identity.getSignInClient(requireActivity())
-        val signInRequest = BeginSignInRequest.builder()
-            .setGoogleIdTokenRequestOptions(
-                BeginSignInRequest.GoogleIdTokenRequestOptions.builder()
-                    .setSupported(true)
-                    // Your server's client ID, not your Android client ID.
-                    .setServerClientId(getString(R.string.id))
-                    // Only show accounts previously used to sign in.
-                    .setFilterByAuthorizedAccounts(true)
-                    .build())
-            .build()
-        oneTapClient.beginSignIn(signInRequest).addOnSuccessListener { it ->
-            uid = sharedPreferences.getString("uid", null) ?: it.pendingIntent.creatorUid.toString()
-            println("UID = $uid")
-            database.getReference("data").child(uid).get()
-                .addOnCompleteListener {
-                    dataInFirebase = it.result.getValue<DatabaseData>()
-                    checkForInternet()
-                    if (dataInFirebase?.dateLastEdit == null) return@addOnCompleteListener
-                    if (localData?.dateLastEdit == null)
-                        return@addOnCompleteListener adapter.setData(dataInFirebase?.listTodo)
-                    adapter.setData(dataInFirebase?.listTodo)
-                    if (localData?.dateLastEdit!! < dataInFirebase?.dateLastEdit!!)
-                        adapter.setData(dataInFirebase?.listTodo)
-                    else saveData()
-                }
-        }
-//        Firebase.auth.signInAnonymously().addOnSuccessListener { it->
-//            uid = sharedPreferences.getString("uid", null) ?: it.user?.uid!!
-//            println("UID = $uid")
-//            database.getReference("data").child(uid).get()
-//                .addOnCompleteListener {
-//                    dataInFirebase = it.result.getValue<DatabaseData>()
-//                    checkForInternet()
-//                    if (dataInFirebase?.dateLastEdit == null) return@addOnCompleteListener
-//                    if (localData?.dateLastEdit == null)
-//                        return@addOnCompleteListener adapter.setData(dataInFirebase?.listTodo)
-//                    adapter.setData(dataInFirebase?.listTodo)
-//                    if (localData?.dateLastEdit!! < dataInFirebase?.dateLastEdit!!)
-//                        adapter.setData(dataInFirebase?.listTodo)
-//                    else saveData()
-//                }
-//        }
-    }
+    private fun initVars(){
+        adapter = ToDoAdapter{ saveData() }
+        sharedPreferences = requireContext().getSharedPreferences("data", Context.MODE_PRIVATE)
+        uid = sharedPreferences.getString("uid", arguments?.getString("userId"))!!
 
-    private fun initApp() {
-        FirebaseApp.initializeApp(requireContext())
-        val firebaseAppCheck = FirebaseAppCheck.getInstance()
-        firebaseAppCheck.installAppCheckProviderFactory(
-            SafetyNetAppCheckProviderFactory.getInstance()
-        )
+        val json = sharedPreferences.getString("history",null)
+        localData = Gson().fromJson(json, DatabaseData::class.java)
         database = Firebase.database("https://todo-b94ed-default-rtdb.firebaseio.com")
-        checkForInternet()
     }
 
     private fun saveData(){
@@ -138,8 +92,7 @@ class MainFragment : Fragment(){
         }
         super.onPause()
     }
-
-    @SuppressLint("ServiceCast")
+    
     private fun checkForInternet() {
         fun setVisible(){ binding.imageNoEthernet.visibility = View.VISIBLE }
         // register activity with the connectivity manager service
