@@ -4,15 +4,11 @@
     <string name="export_id_title">export</string>
     <string name="import_id_title">import</string>
     <string name="reset_id_title">reset</string>
-    <string name="title_activity_login">LoginActivity</string>
-    <string name="prompt_email">Email</string>
-    <string name="prompt_password">Password</string>
-    <string name="action_sign_in">Sign in or register</string>
-    <string name="action_sign_in_short">Sign in</string>
-    <string name="welcome">"Welcome !"</string>
-    <string name="invalid_username">Not a valid username</string>
-    <string name="invalid_password">Password must be >5 characters</string>
-    <string name="login_failed">"Login failed"</string>
     <string name="google">google</string>
     <string name="anonymous">anonymous</string>
+    <string name="comments">Коментарии</string>
+    <string name="sub_todo">Добавить ToDo</string>
+    <string name="is_todo_secret">ToDo секретная</string>
+    <string name="todo_title">Название ToDo</string>
+    <string name="plus">+</string>
 </resources>

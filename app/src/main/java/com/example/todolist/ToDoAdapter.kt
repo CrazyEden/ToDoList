@@ -1,6 +1,7 @@
 package com.example.todolist
 
 import android.text.InputType
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -41,16 +42,31 @@ class ToDoAdapter(private val listWasUpdated: ListWasUpdated,
     override fun onBindViewHolder(holder: ToDoViewHolder, position: Int) {
 
         val item= list[position]
+        val adapter = SubTodoAdapter{
+            list[position].subTodo = it
+            listWasUpdated(list)
+        }
+        holder.binding.rcViewSubTodo.adapter = adapter
+        adapter.setData(item.subTodo)
+        holder.binding.buttonAddSubTodo.setOnClickListener {
+            Log.wtf(TAG, "btn add pressed")
+            val subStr = holder.binding.textSubTodo.text.toString()
+            if (subStr.isEmpty()) return@setOnClickListener
+            holder.binding.textSubTodo.apply {
+                text.clear()
+                onEditorAction(EditorInfo.IME_ACTION_DONE)
+                clearFocus()
+            }
+            item.subTodo?.add(SubTodo(string = subStr))
+            listWasUpdated(list)
+            adapter.addData(SubTodo(string = subStr))
+        }
 
         if (!isShowSecretTodo && item.secretToDo){
             holder.binding.root.visibility = View.GONE
-            holder.binding.comment.visibility = View.GONE
-            holder.binding.checkBox.visibility = View.GONE
-            holder.binding.textView.visibility = View.GONE
-            holder.binding.imageButton.visibility = View.GONE
             return
         }
-
+        holder.binding.titleTodo.text = item.string
         if (!isAdmin) holder.binding.secretTodoLayout.visibility = View.GONE
         else holder.binding.checkBoxIsTodoSecret.apply {
             isChecked = item.secretToDo
@@ -66,7 +82,7 @@ class ToDoAdapter(private val listWasUpdated: ListWasUpdated,
             else holder.binding.commentLayout.visibility = View.VISIBLE
         }
 
-        holder.binding.textView.text = item.string
+
 
         holder.binding.comment.apply {
             setText(item.comment)
@@ -83,23 +99,6 @@ class ToDoAdapter(private val listWasUpdated: ListWasUpdated,
                 false
             }
         }
-
-        holder.binding.checkBox.apply {
-            isChecked = item.isCompleted
-            setOnCheckedChangeListener { _, isChecked ->
-                item.isCompleted = isChecked
-                listWasUpdated(list)
-            }
-        }
-
-        holder.binding.imageButton.setOnClickListener {
-            list.removeAt(position)
-            notifyItemRemoved(position)
-            notifyItemRangeChanged(position,list.size)
-            listWasUpdated(list)
-        }
-
-
     }
     override fun getItemCount(): Int = list.size
 

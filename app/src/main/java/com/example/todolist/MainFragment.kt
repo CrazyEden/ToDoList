@@ -1,5 +1,6 @@
 package com.example.todolist
 
+import android.app.AlertDialog
 import android.content.ClipData
 import android.content.ClipboardManager
 import android.content.Context
@@ -9,6 +10,8 @@ import android.net.ConnectivityManager
 import android.net.NetworkCapabilities
 import android.os.Bundle
 import android.view.*
+import android.widget.CheckBox
+import android.widget.EditText
 import android.widget.Toast
 import androidx.fragment.app.Fragment
 import com.example.todolist.databinding.FragmentMainBinding
@@ -32,6 +35,8 @@ class MainFragment : Fragment(){
 
     private var localData:DatabaseData? = null
     private var dataInFirebase:DatabaseData? = null
+
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setHasOptionsMenu(true)
@@ -39,8 +44,6 @@ class MainFragment : Fragment(){
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         binding = FragmentMainBinding.inflate(inflater, container, false)
         initVars()
-
-
         database.getReference("data").child(targetShowingId).get()
             .addOnCompleteListener {
                 dataInFirebase = it.result.getValue<DatabaseData>()
@@ -60,13 +63,26 @@ class MainFragment : Fragment(){
 
         checkForInternet()
 
-        binding.buttonAdd.setOnClickListener {
-            if(binding.textView.text.isNullOrEmpty()) return@setOnClickListener
-            adapter.addData(Todo(binding.textView.text.toString()))
-            saveData()
-            binding.textView.text.clear()
+        binding.buttonAddTodo.setOnClickListener {
+            openDialogToCreateNewTodo()
         }
         return binding.root
+    }
+
+    private fun openDialogToCreateNewTodo() {
+        AlertDialog.Builder(context)
+            .setView(R.layout.dialog_create_new_todo)
+            .setPositiveButton("Create") { dialog, _ ->
+                val alertDialog = dialog as AlertDialog
+                val alertText = alertDialog.findViewById<EditText>(R.id.dialogTextView).text.toString()
+                val alertIsTodoSecret = alertDialog.findViewById<CheckBox>(R.id.dialogCheckbox).isChecked
+                adapter.addData(Todo(string = alertText, secretToDo = alertIsTodoSecret))
+                saveData()
+            }
+            .setNegativeButton("Cancel"){ dialog, _ ->
+                dialog.dismiss()
+            }
+            .show()
     }
 
     private fun initVars(){
