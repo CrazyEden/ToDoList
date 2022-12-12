@@ -1,4 +1,4 @@
-package com.example.todolist
+package com.example.todolist.ui.mainfragment
 
 import android.app.AlertDialog
 import android.content.ClipData
@@ -9,16 +9,18 @@ import android.content.SharedPreferences
 import android.net.ConnectivityManager
 import android.net.NetworkCapabilities
 import android.os.Bundle
+import android.util.Log
 import android.view.*
 import android.widget.CheckBox
 import android.widget.EditText
 import android.widget.Toast
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.viewModels
+import com.example.todolist.R
+import com.example.todolist.data.model.DatabaseData
+import com.example.todolist.data.model.Todo
 import com.example.todolist.databinding.FragmentMainBinding
-import com.google.firebase.database.FirebaseDatabase
-import com.google.firebase.database.ktx.database
-import com.google.firebase.database.ktx.getValue
-import com.google.firebase.ktx.Firebase
+import com.example.todolist.ui.TAG
 import com.google.gson.Gson
 import java.util.*
 
@@ -28,13 +30,10 @@ class MainFragment : Fragment(){
     private lateinit var binding: FragmentMainBinding
     private lateinit var adapter: ToDoAdapter
     private lateinit var sharedPreferences:SharedPreferences
-    private lateinit var database: FirebaseDatabase
     private lateinit var targetShowingId:String
     private lateinit var currentAuthId:String
-    private lateinit var adminAuthId:String
-
-    private var localData:DatabaseData? = null
-    private var dataInFirebase:DatabaseData? = null
+    private val vModel: MainViewModel by viewModels()
+    private var localData: DatabaseData? = null
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -44,29 +43,50 @@ class MainFragment : Fragment(){
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         binding = FragmentMainBinding.inflate(inflater, container, false)
         initVars()
-        database.getReference("data").child(targetShowingId).get()
-            .addOnCompleteListener {
-                dataInFirebase = it.result.getValue<DatabaseData>()
-                checkForInternet()
-                if (dataInFirebase?.dateLastEdit == null) return@addOnCompleteListener
-                if (localData?.dateLastEdit == null)
-                    return@addOnCompleteListener adapter.setData(dataInFirebase?.listTodo)
-
-                adapter.setData(dataInFirebase?.listTodo)
-
-
-
-                if (localData?.dateLastEdit!! < dataInFirebase?.dateLastEdit!!)
-                    adapter.setData(dataInFirebase?.listTodo)
-                else saveData()
-            }
-
-        checkForInternet()
+        checkInternetAccess()
+        initViewModelObservers()
+        vModel.loadDataByUserId(targetShowingId)
 
         binding.buttonAddTodo.setOnClickListener {
             openDialogToCreateNewTodo()
         }
         return binding.root
+    }
+
+    private fun initViewModelObservers() {
+        vModel.adminIdLiveData.observe(viewLifecycleOwner){
+            if (it==null){
+                binding.imageNoEthernet.visibility = View.VISIBLE
+                return@observe
+            }
+            binding.imageNoEthernet.visibility = View.GONE
+            Log.wtf(TAG,"adminIdLiveData observe string \"$it\" | your id \"$currentAuthId\"")
+            val isAdmin =  currentAuthId == it
+            val isShow = ( isAdmin || currentAuthId == targetShowingId)
+            Log.wtf(TAG,"isShowHidedTodo \"$isShow\" | isAdmin \"$isAdmin\"")
+            adapter = ToDoAdapter(listWasUpdated = { saveData() },
+                isShowSecretTodo = isShow,
+                isAdmin = isAdmin
+            )
+
+            binding.rcView.adapter = adapter
+            adapter.setData(localData?.listTodo)
+        }
+        vModel.dataInFirebaseLiveData.observe(viewLifecycleOwner){
+            if (it==null){
+                binding.imageNoEthernet.visibility = View.VISIBLE
+                return@observe
+            }
+            binding.imageNoEthernet.visibility = View.GONE
+            Log.wtf(TAG,"dataInFirebaseLiveData observe data by time \"${it.dateLastEdit}\"")
+            if (localData == it) return@observe
+            if (localData?.dateLastEdit == null) return@observe adapter.setData(it.listTodo)
+            if (it.dateLastEdit == null) return@observe saveData()
+
+            if (localData?.dateLastEdit!! < it.dateLastEdit)
+                adapter.setData(it.listTodo)
+            else saveData()
+        }
     }
 
     private fun openDialogToCreateNewTodo() {
@@ -86,31 +106,16 @@ class MainFragment : Fragment(){
     }
 
     private fun initVars(){
-
-        database = Firebase.database("https://todo-b94ed-default-rtdb.firebaseio.com")
-        database.getReference("adminId").get().addOnSuccessListener {
-            adminAuthId = it.getValue(String::class.java).toString()
-            val isShow = (currentAuthId == adminAuthId || currentAuthId == localData?.userId)
-            val isAdmin =  currentAuthId == adminAuthId
-            adapter = ToDoAdapter(listWasUpdated = { saveData() }, isShowSecretTodo = isShow, isAdmin = isAdmin)
-            binding.rcView.adapter = adapter
-            adapter.setData(localData?.listTodo)
-        }
         sharedPreferences = requireContext().getSharedPreferences("data", Context.MODE_PRIVATE)
         val json = sharedPreferences.getString("history",null)
         localData = Gson().fromJson(json, DatabaseData::class.java)
-
-
-
         currentAuthId = arguments?.getString("userId")!!
-        targetShowingId = sharedPreferences.getString("uid", arguments?.getString("userId"))!!
-
-
+        targetShowingId = sharedPreferences.getString("uid", currentAuthId)!!
     }
 
     private fun saveData(){
-        checkForInternet()
-        database.getReference("data").child(targetShowingId).setValue(adapter.getDatabaseData(getCurrentTime(), userId = targetShowingId)).addOnCompleteListener { checkForInternet() }
+        val data = adapter.getDatabaseData(getCurrentTime(), userId = targetShowingId)
+        vModel.saveData(targetShowingId,data)
     }
 
     override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
@@ -120,14 +125,10 @@ class MainFragment : Fragment(){
 
     override fun onPause() {
         sharedPreferences.edit().putString("history",adapter.toJson(currentAuthId)).apply()
-        runCatching {
-            if (localData?.dateLastEdit!! > dataInFirebase?.dateLastEdit!!)
-                saveData()
-        }
         super.onPause()
     }
     
-    private fun checkForInternet() {
+    private fun checkInternetAccess() {
         fun setVisible(){ binding.imageNoEthernet.visibility = View.VISIBLE }
         // register activity with the connectivity manager service
         val connectivityManager = context?.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
@@ -150,27 +151,22 @@ class MainFragment : Fragment(){
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         val clipBoardManager = context?.getSystemService(CLIPBOARD_SERVICE) as ClipboardManager
         when (item.itemId){
-            R.id.export_id->{
+            R.id.export_id ->{
                 val clip = ClipData.newPlainText("xdd", targetShowingId)
                 clipBoardManager.setPrimaryClip(ClipData(clip))
                 makeToast("Ключ скопирован в буфер обмена")
             }
-            R.id.import_id->{
+            R.id.import_id ->{
                 runCatching {
+                    throw NullPointerException("нероботоет")
                     makeToast("Поиск ключа в буфере обмена..")
                     val clipData = clipBoardManager.primaryClip?.getItemAt(0)?.text.toString()
                     targetShowingId = clipData
                     sharedPreferences.edit().putString("uid",clipData).apply()
-                    database.getReference("data").child(targetShowingId).get()
-                        .addOnCompleteListener {
-                            val tempDataInFirebase = it.result.getValue<DatabaseData>()
-                            checkForInternet()
-                            if (tempDataInFirebase?.dateLastEdit == null) return@addOnCompleteListener
-                            adapter.setData(tempDataInFirebase.listTodo)
-                        }
-                }.getOrElse { makeToast("Что-то пошло не так") }
+                    vModel.loadDataByUserId(clipData)
+                }.getOrElse { makeToast("Что-то пошло не так"); true}
             }
-            R.id.reset_id->{
+            R.id.reset_id ->{
                 sharedPreferences.edit().remove("uid").apply()
             }
         }

@@ -5,6 +5,6 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:id="@+id/container"
-    android:name="com.example.todolist.SignInFragment"
+    android:name="com.example.todolist.ui.SignInFragment"
     tools:layout="@layout/fragment_sign_in"
-    tools:context=".MainActivity"/>
+    tools:context="ui.MainActivity"/>

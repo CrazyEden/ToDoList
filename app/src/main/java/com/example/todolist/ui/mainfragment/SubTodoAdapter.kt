@@ -1,11 +1,13 @@
-package com.example.todolist
+package com.example.todolist.ui.mainfragment
 
 import android.graphics.Color
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
+import com.example.todolist.data.model.SubTodo
 import com.example.todolist.databinding.SubTodoBinding
+import com.example.todolist.ui.TAG
 
 typealias SubTodoWasUpdated = (list:MutableList<SubTodo>) -> Unit
 
