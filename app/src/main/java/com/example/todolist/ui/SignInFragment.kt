@@ -44,8 +44,6 @@ class SignInFragment : Fragment() {
         val firebaseAppCheck = FirebaseAppCheck.getInstance()
         firebaseAppCheck.installAppCheckProviderFactory(SafetyNetAppCheckProviderFactory.getInstance())
 
-        Log.wtf("xdd", "user is null = ${currentUser == null}")
-        Log.wtf("xdd", "user id = ${auth.currentUser?.uid}")
 
         if (currentUser!=null)openFragment(bundleOf("userId" to currentUser!!.uid))
         else {

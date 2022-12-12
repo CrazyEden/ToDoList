@@ -1,18 +1,18 @@
 package com.example.todolist.ui.mainfragment
 
 import android.app.AlertDialog
-import android.content.ClipData
-import android.content.ClipboardManager
 import android.content.Context
-import android.content.Context.CLIPBOARD_SERVICE
 import android.content.SharedPreferences
 import android.net.ConnectivityManager
 import android.net.NetworkCapabilities
 import android.os.Bundle
 import android.util.Log
-import android.view.*
+import android.view.LayoutInflater
+import android.view.View
+import android.view.ViewGroup
 import android.widget.CheckBox
 import android.widget.EditText
+import android.widget.PopupMenu
 import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
@@ -32,14 +32,10 @@ class MainFragment : Fragment(){
     private lateinit var sharedPreferences:SharedPreferences
     private lateinit var targetShowingId:String
     private lateinit var currentAuthId:String
+    private lateinit var popupMenu:PopupMenu
     private val vModel: MainViewModel by viewModels()
     private var localData: DatabaseData? = null
 
-
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        setHasOptionsMenu(true)
-    }
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         binding = FragmentMainBinding.inflate(inflater, container, false)
         initVars()
@@ -49,6 +45,11 @@ class MainFragment : Fragment(){
 
         binding.buttonAddTodo.setOnClickListener {
             openDialogToCreateNewTodo()
+        }
+        binding.buttonAddTodo.setOnLongClickListener {
+            runCatching { popupMenu.show() }
+                .getOrElse { Toast.makeText(requireContext(),"не удалось загрузить список",Toast.LENGTH_LONG).show()}
+            true
         }
         return binding.root
     }
@@ -78,7 +79,9 @@ class MainFragment : Fragment(){
                 return@observe
             }
             binding.imageNoEthernet.visibility = View.GONE
-            Log.wtf(TAG,"dataInFirebaseLiveData observe data by time \"${it.dateLastEdit}\"")
+            Log.wtf(TAG,"dataInFirebaseLiveData observe for id  \"${it.userId}\"")
+            activity?.title = it.userId
+
             if (localData == it) return@observe
             if (localData?.dateLastEdit == null) return@observe adapter.setData(it.listTodo)
             if (it.dateLastEdit == null) return@observe saveData()
@@ -86,6 +89,11 @@ class MainFragment : Fragment(){
             if (localData?.dateLastEdit!! < it.dateLastEdit)
                 adapter.setData(it.listTodo)
             else saveData()
+        }
+        vModel.listCurrentUsers.observe(viewLifecycleOwner){ it ->
+            if (it.isEmpty()) return@observe
+            popupMenu.menu.clear()
+            it.forEach { popupMenu.menu.add(it) }
         }
     }
 
@@ -111,16 +119,19 @@ class MainFragment : Fragment(){
         localData = Gson().fromJson(json, DatabaseData::class.java)
         currentAuthId = arguments?.getString("userId")!!
         targetShowingId = sharedPreferences.getString("uid", currentAuthId)!!
+        popupMenu = PopupMenu(context,binding.buttonAddTodo)
+        popupMenu.setOnMenuItemClickListener {
+            val tempStr = it.title.toString()
+            targetShowingId = tempStr
+            Log.wtf(TAG, "in popup menu was selected item \"$tempStr\"")
+            vModel.loadDataByUserId(tempStr)
+            true
+        }
     }
 
     private fun saveData(){
         val data = adapter.getDatabaseData(getCurrentTime(), userId = targetShowingId)
         vModel.saveData(targetShowingId,data)
-    }
-
-    override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
-        inflater.inflate(R.menu.main_menu,menu)
-        super.onCreateOptionsMenu(menu, inflater)
     }
 
     override fun onPause() {
@@ -146,33 +157,5 @@ class MainFragment : Fragment(){
 
     companion object{
         fun getCurrentTime() = Calendar.getInstance().time.time
-    }
-
-    override fun onOptionsItemSelected(item: MenuItem): Boolean {
-        val clipBoardManager = context?.getSystemService(CLIPBOARD_SERVICE) as ClipboardManager
-        when (item.itemId){
-            R.id.export_id ->{
-                val clip = ClipData.newPlainText("xdd", targetShowingId)
-                clipBoardManager.setPrimaryClip(ClipData(clip))
-                makeToast("Ключ скопирован в буфер обмена")
-            }
-            R.id.import_id ->{
-                runCatching {
-                    throw NullPointerException("нероботоет")
-                    makeToast("Поиск ключа в буфере обмена..")
-                    val clipData = clipBoardManager.primaryClip?.getItemAt(0)?.text.toString()
-                    targetShowingId = clipData
-                    sharedPreferences.edit().putString("uid",clipData).apply()
-                    vModel.loadDataByUserId(clipData)
-                }.getOrElse { makeToast("Что-то пошло не так"); true}
-            }
-            R.id.reset_id ->{
-                sharedPreferences.edit().remove("uid").apply()
-            }
-        }
-        return true
-    }
-    private fun makeToast(message:String){
-        Toast.makeText(requireContext(),message,Toast.LENGTH_LONG).show()
     }
 }

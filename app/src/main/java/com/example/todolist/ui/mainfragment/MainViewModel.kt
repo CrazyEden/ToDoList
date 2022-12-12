@@ -12,28 +12,46 @@ import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.ValueEventListener
 import com.google.firebase.database.ktx.database
 import com.google.firebase.ktx.Firebase
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.tasks.await
+
 
 class MainViewModel:ViewModel() {
 
     private val _adminIdLiveData = MutableLiveData<String?>()
-    private val _dataInFirebaseLiveData = MutableLiveData<DatabaseData?>()
     val adminIdLiveData: LiveData<String?> = _adminIdLiveData
+    private val _dataInFirebaseLiveData = MutableLiveData<DatabaseData?>()
     val dataInFirebaseLiveData: LiveData<DatabaseData?> = _dataInFirebaseLiveData
+    private val _listCurrentUsers = MutableLiveData<List<String?>>()
+    val listCurrentUsers: LiveData<List<String?>> = _listCurrentUsers
 
     private var database = Firebase.database("https://todo-b94ed-default-rtdb.firebaseio.com")
 
-
-
+    private var obj1:ValueEventListener? = null
+    private var obj2:ValueEventListener? = null
+    private lateinit var pastId:String
     fun loadDataByUserId(id:String){
-        viewModelScope.launch {
-            database.getReference("adminId").ref.addValueEventListener(object :ValueEventListener{
+        obj1?.let {
+            Log.wtf(TAG,"adminId observer was removed")
+            database.getReference("adminId").removeEventListener(it)
+        }
+        obj2?.let {
+            Log.wtf(TAG,"data observer was removed for id \"$pastId\"")
+            database.getReference("data").child(pastId).removeEventListener(it)
+        }
+        pastId = id
+        viewModelScope.launch(Dispatchers.IO) {
+
+            database.getReference("adminId").addValueEventListener(object :ValueEventListener{
+                init { obj1 = this }
                 override fun onDataChange(snapshot: DataSnapshot) {
                     val admId = snapshot.getValue(String::class.java).toString()
                     _adminIdLiveData.postValue(admId)
-
-                    database.getReference("data").child(id).ref.addValueEventListener(object : ValueEventListener {
+                    database.getReference("data").child(id).addValueEventListener(object : ValueEventListener {
+                        init { obj2 = this }
                         override fun onDataChange(snapshot: DataSnapshot) {
+
                             val data = snapshot.getValue(DatabaseData::class.java)
                             _dataInFirebaseLiveData.postValue(data)
                         }
@@ -49,6 +67,10 @@ class MainViewModel:ViewModel() {
                 }
 
             })
+            runCatching {
+                val b = database.getReference("data").get().await().children.map { it.key }.toList()//list of users with data
+                _listCurrentUsers.postValue(b)
+            }.getOrElse { Log.wtf(TAG,"loading list users is failed") }
 
         }
 
@@ -58,5 +80,17 @@ class MainViewModel:ViewModel() {
             .setValue(dataForSave).addOnCompleteListener {
                 Log.wtf(TAG,"data was uploaded to firebase for id $targetShowingId")
             }
+    }
+
+    override fun onCleared() {
+        obj1?.let {
+            Log.wtf(TAG,"adminId observer was removed")
+            database.getReference("adminId").removeEventListener(it)
+        }
+        obj2?.let {
+            Log.wtf(TAG,"data observer was removed for id \"$pastId\"")
+            database.getReference("data").child(pastId).removeEventListener(it)
+        }
+        super.onCleared()
     }
 }
