@@ -91,15 +91,17 @@ class ToDoAdapter(private val listWasUpdated: ListWasUpdated,
 
 
 
-        holder.binding.comment.apply {
-            setText(item.comment)
+        holder.binding.notes.apply {
+            if (isShowSecretTodo) visibility = View.VISIBLE
+            else return@apply
+            setText(item.notes)
             setRawInputType(InputType.TYPE_CLASS_TEXT)
             setOnEditorActionListener { view, actionId, _ ->
                 if (actionId == EditorInfo.IME_ACTION_DONE) {
                     view.clearFocus()
                     val str = view.text.toString()
-                    if (str == list[position].comment) return@setOnEditorActionListener true
-                    list[position].comment = str
+                    if (str == list[position].notes) return@setOnEditorActionListener true
+                    list[position].notes = str
                     listWasUpdated(list)
                     return@setOnEditorActionListener false
                 }

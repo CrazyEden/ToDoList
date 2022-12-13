@@ -6,7 +6,7 @@
     <string name="reset_id_title">reset</string>
     <string name="google">google</string>
     <string name="anonymous">anonymous</string>
-    <string name="comments">Коментарии</string>
+    <string name="notes">Заметки</string>
     <string name="sub_todo">Добавить ToDo</string>
     <string name="is_todo_secret">ToDo секретная</string>
     <string name="todo_title">Название ToDo</string>

@@ -77,10 +77,12 @@
         </LinearLayout>
         <EditText
             android:importantForAutofill="no"
-            android:id="@+id/comment"
+            android:id="@+id/notes"
+            android:visibility="gone"
+            tools:visibility="visible"
             android:imeOptions="actionDone"
             android:inputType="textMultiLine"
-            android:hint="@string/comments"
+            android:hint="@string/notes"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"/>
     </LinearLayout>
