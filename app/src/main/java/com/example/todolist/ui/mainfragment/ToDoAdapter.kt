@@ -1,7 +1,6 @@
 package com.example.todolist.ui.mainfragment
 
 import android.app.ActionBar.LayoutParams
-import android.graphics.Color
 import android.text.InputType
 import android.util.Log
 import android.view.LayoutInflater
@@ -28,11 +27,13 @@ class ToDoAdapter(private val listWasUpdated: ListWasUpdated,
     init { Log.i(TAG,"ToDoAdapter is created") }
     fun setData(list:List<Todo>?){
         this.list = list?.toMutableList() ?: return
+        list.sortedBy { it.deadlineLong }
         notifyDataSetChanged()
     }
 
     fun addData(item: Todo){
         list.add(item)
+        list.sortedBy { it.deadlineLong }
         notifyItemInserted(list.size)
     }
 
@@ -73,7 +74,7 @@ class ToDoAdapter(private val listWasUpdated: ListWasUpdated,
         }
 
 
-        holder.binding.titleTodo.text = item.string
+        holder.binding.titleTodo.text = item.titleToDo
         if (!isAdmin) holder.binding.secretTodoLayout.visibility = View.GONE
         else holder.binding.checkBoxIsTodoSecret.apply {
             isChecked = item.secretToDo
@@ -109,14 +110,14 @@ class ToDoAdapter(private val listWasUpdated: ListWasUpdated,
             }
         }
         holder.binding.duration.apply {
-            text = item.duration
-            when(item.duration){
-                "День"-> Color.RED
-                "Неделя"-> Color.YELLOW
-                "Месяц"-> Color.CYAN
-                "Квартал"-> Color.GREEN
-                else-> null
-            }?.let { setTextColor(it) }
+//            text = item.duration
+//            when(item.duration){
+//                "День"-> Color.RED
+//                "Неделя"-> Color.YELLOW
+//                "Месяц"-> Color.CYAN
+//                "Квартал"-> Color.GREEN
+//                else-> null
+//            }?.let { setTextColor(it) }
         }
 
 

@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:orientation="vertical"
     android:gravity="center"
@@ -13,11 +14,16 @@
         android:gravity="center"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"/>
-    <Spinner
-        android:id="@+id/spinner"
-        tools:listitem="@layout/support_simple_spinner_dropdown_item"
+    <TextView
+        android:id="@+id/textViewDatetime"
+        android:hint="@string/select_datatime_hint"
         android:layout_width="wrap_content"
-        android:layout_height="wrap_content" />
+        android:layout_height="wrap_content"/>
+    <androidx.appcompat.widget.AppCompatButton
+        android:id="@+id/buttonPickData"
+        android:text="@string/pick_datetime"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"/>
     <CheckBox
         android:visibility="gone"
         tools:visibility="visible"

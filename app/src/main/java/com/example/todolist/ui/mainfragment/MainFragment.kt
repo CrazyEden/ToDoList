@@ -1,6 +1,8 @@
 package com.example.todolist.ui.mainfragment
 
 import android.app.AlertDialog
+import android.app.DatePickerDialog
+import android.app.TimePickerDialog
 import android.content.Context
 import android.content.SharedPreferences
 import android.net.ConnectivityManager
@@ -10,7 +12,6 @@ import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.ArrayAdapter
 import android.widget.PopupMenu
 import android.widget.Toast
 import androidx.fragment.app.Fragment
@@ -22,6 +23,7 @@ import com.example.todolist.databinding.DialogCreateNewTodoBinding
 import com.example.todolist.databinding.FragmentMainBinding
 import com.example.todolist.ui.TAG
 import com.google.gson.Gson
+import java.text.SimpleDateFormat
 import java.util.*
 
 
@@ -94,20 +96,39 @@ class MainFragment : Fragment(){
     }
 
     private fun openDialogToCreateNewTodo() {
-        val array = resources.getStringArray(R.array.todo_duration)
         val dialogBinding = DialogCreateNewTodoBinding.inflate(layoutInflater)
-        val dialogSpinnerAdapter = ArrayAdapter(requireContext(),android.R.layout.simple_list_item_1,array)
         if (isCurrentUserAdmin) dialogBinding.dialogCheckbox.visibility = View.VISIBLE
-        dialogBinding.spinner.adapter = dialogSpinnerAdapter
+        dialogBinding.buttonPickData.setOnClickListener {
+            DatePickerDialog(requireContext(),{ _, year, monthOfYear, dayOfMonth ->
+                val day = "$dayOfMonth.${monthOfYear + 1}.$year"
+                TimePickerDialog(context,{_,h,minutes->
+
+                    val format = SimpleDateFormat("dd.MM.yyyy HH:mm", Locale("ru"))
+                    val time = format.parse("$day $h:$minutes")?.time!!
+                    Log.wtf(TAG,"picked datetime \"$time\"")
+                    val dateStr = format.format(Date(time))
+                    dialogBinding.textViewDatetime.text = dateStr
+                    dialogBinding.textViewDatetime.tag = time
+                },0,0,true).show()
+            }, 2022, 11, 1).show()
+        }
         AlertDialog.Builder(context)
             .setView(dialogBinding.root)
             .setPositiveButton(R.string.create) { _, _ ->
                 val alertText = dialogBinding.dialogTextView.text.toString()
-                if (alertText.isEmpty())return@setPositiveButton
+                if (alertText.isEmpty()) return@setPositiveButton
+                val timeStr = dialogBinding.textViewDatetime.text.toString()
+                if (timeStr.isEmpty()) return@setPositiveButton
                 val alertIsTodoSecret = dialogBinding.dialogCheckbox.isChecked
-                val alertDuration = array[dialogBinding.spinner.selectedItemPosition]
-                Log.i(TAG,"created new todo, String = \"$alertText\" | isToDoSecret = \"$alertIsTodoSecret\" | duration todo = \"$alertDuration\"")
-                adapter.addData(Todo(string = alertText, secretToDo = alertIsTodoSecret, duration = alertDuration))
+                val time = dialogBinding.textViewDatetime.tag as Long
+
+                Log.i(TAG,"created new todo, String = \"$alertText\" | isToDoSecret = \"$alertIsTodoSecret\" | duration todo = \"$\"")
+                adapter.addData(Todo(
+                    titleToDo = alertText,
+                    secretToDo = alertIsTodoSecret,
+                    deadlineLong = time,
+                    deadlineString = timeStr
+                ))
                 uploadDataToFirebase()
             }
             .setNegativeButton(getString(R.string.cancel)){ dialog, _ ->
