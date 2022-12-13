@@ -5,7 +5,7 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.todolist.data.model.DatabaseData
+import com.example.todolist.data.model.UserData
 import com.example.todolist.ui.TAG
 import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.DatabaseError
@@ -21,8 +21,8 @@ class MainViewModel:ViewModel() {
 
     private val _adminIdLiveData = MutableLiveData<String?>()
     val adminIdLiveData: LiveData<String?> = _adminIdLiveData
-    private val _dataInFirebaseLiveData = MutableLiveData<DatabaseData?>()
-    val dataInFirebaseLiveData: LiveData<DatabaseData?> = _dataInFirebaseLiveData
+    private val _dataInFirebaseLiveData = MutableLiveData<UserData?>()
+    val dataInFirebaseLiveData: LiveData<UserData?> = _dataInFirebaseLiveData
     private val _listCurrentUsers = MutableLiveData<List<String?>>()
     val listCurrentUsers: LiveData<List<String?>> = _listCurrentUsers
 
@@ -33,11 +33,11 @@ class MainViewModel:ViewModel() {
     private lateinit var pastId:String
     fun loadDataByUserId(id:String){
         obj1?.let {
-            Log.wtf(TAG,"adminId observer was removed")
+            Log.i(TAG,"adminId observer was removed")
             database.getReference("adminId").removeEventListener(it)
         }
         obj2?.let {
-            Log.wtf(TAG,"data observer was removed for id \"$pastId\"")
+            Log.i(TAG,"data observer was removed for id \"$pastId\"")
             database.getReference("data").child(pastId).removeEventListener(it)
         }
         pastId = id
@@ -52,17 +52,17 @@ class MainViewModel:ViewModel() {
                         init { obj2 = this }
                         override fun onDataChange(snapshot: DataSnapshot) {
 
-                            val data = snapshot.getValue(DatabaseData::class.java)
+                            val data = snapshot.getValue(UserData::class.java)
                             _dataInFirebaseLiveData.postValue(data)
                         }
                         override fun onCancelled(error: DatabaseError) {
-                            Log.wtf(TAG,"get data by id is Cancelled")
+                            Log.w(TAG,"get data by id is Cancelled")
                             _dataInFirebaseLiveData.postValue(null)
                         }
                     })
                 }
                 override fun onCancelled(error: DatabaseError) {
-                    Log.wtf(TAG,"get admin id is Cancelled")
+                    Log.w(TAG,"get admin id is Cancelled")
                     _adminIdLiveData.postValue(null)
                 }
 
@@ -70,25 +70,25 @@ class MainViewModel:ViewModel() {
             runCatching {
                 val b = database.getReference("data").get().await().children.map { it.key }.toList()//list of users with data
                 _listCurrentUsers.postValue(b)
-            }.getOrElse { Log.wtf(TAG,"loading list users is failed") }
+            }.getOrElse { Log.e(TAG,"loading list users is failed") }
 
         }
 
     }
-    fun saveData(targetShowingId:String,dataForSave: DatabaseData){
+    fun saveData(targetShowingId:String,dataForSave: UserData){
         database.getReference("data").child(targetShowingId)
             .setValue(dataForSave).addOnCompleteListener {
-                Log.wtf(TAG,"data was uploaded to firebase for id $targetShowingId")
+                Log.i(TAG,"data was uploaded to firebase for id $targetShowingId")
             }
     }
 
     override fun onCleared() {
         obj1?.let {
-            Log.wtf(TAG,"adminId observer was removed")
+            Log.i(TAG,"adminId observer was removed")
             database.getReference("adminId").removeEventListener(it)
         }
         obj2?.let {
-            Log.wtf(TAG,"data observer was removed for id \"$pastId\"")
+            Log.i(TAG,"data observer was removed for id \"$pastId\"")
             database.getReference("data").child(pastId).removeEventListener(it)
         }
         super.onCleared()

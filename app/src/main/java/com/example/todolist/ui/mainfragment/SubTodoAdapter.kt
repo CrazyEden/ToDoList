@@ -22,8 +22,7 @@ class SubTodoAdapter(val subTodoWasUpdated:SubTodoWasUpdated) : RecyclerView.Ada
     }
     fun addData(item:SubTodo){
         list.add(item)
-        Log.wtf(TAG, "item added $item")
-
+        Log.i(TAG, "item added $item")
         notifyItemInserted(list.size)
     }
 
@@ -38,7 +37,7 @@ class SubTodoAdapter(val subTodoWasUpdated:SubTodoWasUpdated) : RecyclerView.Ada
         holder.binding.checkBox.apply {
             isChecked = item.isCompleted
             setOnCheckedChangeListener { _, isChecked ->
-                Log.wtf(TAG,"checkbox set as $isChecked on position $position")
+                Log.i(TAG,"checkbox set as $isChecked on position $position")
                 if (isChecked) holder.binding.textView.setTextColor(Color.GREEN)
                 else holder.binding.textView.setTextColor(Color.RED)
                 item.isCompleted = isChecked
@@ -50,7 +49,7 @@ class SubTodoAdapter(val subTodoWasUpdated:SubTodoWasUpdated) : RecyclerView.Ada
             setTextColor(if (item.isCompleted) Color.GREEN else Color.RED)
         }
         holder.binding.imageButton.setOnClickListener {
-            Log.wtf(TAG,"item was removed at position $position")
+            Log.i(TAG,"item was removed at position $position")
             list.removeAt(position)
             notifyItemRemoved(position)
             notifyItemRangeChanged(position,list.size)

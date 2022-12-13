@@ -5,5 +5,6 @@ data class Todo(
     var comment: String? = null,
     var secretToDo: Boolean = false,
     var isCompleted:Boolean = false,
-    var subTodo: MutableList<SubTodo>? = mutableListOf()
+    var subTodo: MutableList<SubTodo>? = mutableListOf(),
+    var duration: String = "День"
 )

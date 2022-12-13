@@ -10,15 +10,15 @@ import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.CheckBox
-import android.widget.EditText
+import android.widget.ArrayAdapter
 import android.widget.PopupMenu
 import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import com.example.todolist.R
-import com.example.todolist.data.model.DatabaseData
 import com.example.todolist.data.model.Todo
+import com.example.todolist.data.model.UserData
+import com.example.todolist.databinding.DialogCreateNewTodoBinding
 import com.example.todolist.databinding.FragmentMainBinding
 import com.example.todolist.ui.TAG
 import com.google.gson.Gson
@@ -34,7 +34,9 @@ class MainFragment : Fragment(){
     private lateinit var currentAuthId:String
     private lateinit var popupMenu:PopupMenu
     private val vModel: MainViewModel by viewModels()
-    private var localData: DatabaseData? = null
+    private var localData: UserData? = null
+    private var isCurrentUserAdmin = false
+    private var isCurrentUserAtHerselfPageOrAdmin = false
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         binding = FragmentMainBinding.inflate(inflater, container, false)
@@ -56,39 +58,33 @@ class MainFragment : Fragment(){
 
     private fun initViewModelObservers() {
         vModel.adminIdLiveData.observe(viewLifecycleOwner){
-            if (it==null){
-                binding.imageNoEthernet.visibility = View.VISIBLE
-                return@observe
-            }
+            if (it==null) return@observe showEthernetErrorIcon()
+
             binding.imageNoEthernet.visibility = View.GONE
-            Log.wtf(TAG,"adminIdLiveData observe string \"$it\" | your id \"$currentAuthId\"")
-            val isAdmin =  currentAuthId == it
-            val isShow = ( isAdmin || currentAuthId == targetShowingId)
-            Log.wtf(TAG,"isShowHidedTodo \"$isShow\" | isAdmin \"$isAdmin\"")
-            adapter = ToDoAdapter(listWasUpdated = { saveData() },
-                isShowSecretTodo = isShow,
-                isAdmin = isAdmin
+            isCurrentUserAdmin =  currentAuthId == it
+            isCurrentUserAtHerselfPageOrAdmin = (isCurrentUserAdmin || currentAuthId == targetShowingId)
+            Log.i(TAG,"adminIdLiveData observe string \"$it\" | your id \"$currentAuthId\" \n" +
+                    "isShowHidedTodo \"$isCurrentUserAtHerselfPageOrAdmin\" | isAdmin \"$isCurrentUserAdmin\"")
+            adapter = ToDoAdapter(listWasUpdated = { uploadDataToFirebase() },
+                isShowSecretTodo = isCurrentUserAtHerselfPageOrAdmin,
+                isAdmin = isCurrentUserAdmin
             )
 
             binding.rcView.adapter = adapter
             adapter.setData(localData?.listTodo)
         }
         vModel.dataInFirebaseLiveData.observe(viewLifecycleOwner){
-            if (it==null){
-                binding.imageNoEthernet.visibility = View.VISIBLE
-                return@observe
-            }
+            if (it==null) return@observe showEthernetErrorIcon()
+
             binding.imageNoEthernet.visibility = View.GONE
-            Log.wtf(TAG,"dataInFirebaseLiveData observe for id  \"${it.userId}\"")
+            Log.i(TAG,"dataInFirebaseLiveData observe for id  \"${it.userId}\"")
+            if(localData==null) return@observe adapter.setData(it.listTodo)
+            if (localData == it) return@observe
             activity?.title = it.userId
 
-            if (localData == it) return@observe
-            if (localData?.dateLastEdit == null) return@observe adapter.setData(it.listTodo)
-            if (it.dateLastEdit == null) return@observe saveData()
-
-            if (localData?.dateLastEdit!! < it.dateLastEdit)
+            if (localData?.dateLastEdit!! < it.dateLastEdit!!)
                 adapter.setData(it.listTodo)
-            else saveData()
+            else uploadDataToFirebase()
         }
         vModel.listCurrentUsers.observe(viewLifecycleOwner){ it ->
             if (it.isEmpty()) return@observe
@@ -98,38 +94,46 @@ class MainFragment : Fragment(){
     }
 
     private fun openDialogToCreateNewTodo() {
+        val array = resources.getStringArray(R.array.todo_duration)
+        val dialogBinding = DialogCreateNewTodoBinding.inflate(layoutInflater)
+        val dialogSpinnerAdapter = ArrayAdapter(requireContext(),android.R.layout.simple_list_item_1,array)
+        if (isCurrentUserAdmin) dialogBinding.dialogCheckbox.visibility = View.VISIBLE
+        dialogBinding.spinner.adapter = dialogSpinnerAdapter
         AlertDialog.Builder(context)
-            .setView(R.layout.dialog_create_new_todo)
-            .setPositiveButton("Create") { dialog, _ ->
-                val alertDialog = dialog as AlertDialog
-                val alertText = alertDialog.findViewById<EditText>(R.id.dialogTextView).text.toString()
-                val alertIsTodoSecret = alertDialog.findViewById<CheckBox>(R.id.dialogCheckbox).isChecked
-                adapter.addData(Todo(string = alertText, secretToDo = alertIsTodoSecret))
-                saveData()
+            .setView(dialogBinding.root)
+            .setPositiveButton(R.string.create) { _, _ ->
+                val alertText = dialogBinding.dialogTextView.text.toString()
+                if (alertText.isEmpty())return@setPositiveButton
+                val alertIsTodoSecret = dialogBinding.dialogCheckbox.isChecked
+                val alertDuration = array[dialogBinding.spinner.selectedItemPosition]
+                Log.i(TAG,"created new todo, String = \"$alertText\" | isToDoSecret = \"$alertIsTodoSecret\" | duration todo = \"$alertDuration\"")
+                adapter.addData(Todo(string = alertText, secretToDo = alertIsTodoSecret, duration = alertDuration))
+                uploadDataToFirebase()
             }
-            .setNegativeButton("Cancel"){ dialog, _ ->
+            .setNegativeButton(getString(R.string.cancel)){ dialog, _ ->
                 dialog.dismiss()
             }
+            .setTitle(R.string.create_new_todo)
             .show()
     }
 
     private fun initVars(){
         sharedPreferences = requireContext().getSharedPreferences("data", Context.MODE_PRIVATE)
         val json = sharedPreferences.getString("history",null)
-        localData = Gson().fromJson(json, DatabaseData::class.java)
+        localData = Gson().fromJson(json, UserData::class.java)
         currentAuthId = arguments?.getString("userId")!!
         targetShowingId = sharedPreferences.getString("uid", currentAuthId)!!
         popupMenu = PopupMenu(context,binding.buttonAddTodo)
         popupMenu.setOnMenuItemClickListener {
             val tempStr = it.title.toString()
             targetShowingId = tempStr
-            Log.wtf(TAG, "in popup menu was selected item \"$tempStr\"")
+            Log.i(TAG, "in popup menu was selected item \"$tempStr\"")
             vModel.loadDataByUserId(tempStr)
             true
         }
     }
 
-    private fun saveData(){
+    private fun uploadDataToFirebase(){
         val data = adapter.getDatabaseData(getCurrentTime(), userId = targetShowingId)
         vModel.saveData(targetShowingId,data)
     }
@@ -140,20 +144,20 @@ class MainFragment : Fragment(){
     }
     
     private fun checkInternetAccess() {
-        fun setVisible(){ binding.imageNoEthernet.visibility = View.VISIBLE }
         // register activity with the connectivity manager service
         val connectivityManager = context?.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
 
         // Returns a Network object corresponding to
         // the currently active default data network.
-        val network = connectivityManager.activeNetwork ?: return setVisible()
+        val network = connectivityManager.activeNetwork ?: return showEthernetErrorIcon()
         // Representation of the capabilities of an active network.
-        val activeNetwork = connectivityManager.getNetworkCapabilities(network) ?:return setVisible()
+        val activeNetwork = connectivityManager.getNetworkCapabilities(network) ?:return showEthernetErrorIcon()
         if (activeNetwork.hasTransport(NetworkCapabilities.TRANSPORT_WIFI) ||
             activeNetwork.hasTransport(NetworkCapabilities.TRANSPORT_CELLULAR))
             binding.imageNoEthernet.visibility = View.GONE
-        else setVisible()
+        else showEthernetErrorIcon()
     }
+    private fun showEthernetErrorIcon(){ binding.imageNoEthernet.visibility = View.VISIBLE }
 
     companion object{
         fun getCurrentTime() = Calendar.getInstance().time.time

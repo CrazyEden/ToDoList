@@ -11,4 +11,13 @@
     <string name="is_todo_secret">ToDo секретная</string>
     <string name="todo_title">Название ToDo</string>
     <string name="plus">+</string>
+    <string name="cancel">Отмена</string>
+    <string name="create">Создать</string>
+    <string name="create_new_todo">Создание новой ToDO</string>
+    <string-array name="todo_duration">
+        <item>День</item>
+        <item>Неделя</item>
+        <item>Месяц</item>
+        <item>Квартал</item>
+    </string-array>
 </resources>
