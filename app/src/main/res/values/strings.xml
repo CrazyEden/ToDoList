@@ -16,4 +16,7 @@
     <string name="create_new_todo">Создание новой ToDO</string>
     <string name="select_datetime_hint">Выбирите дату</string>
     <string name="pick_datetime">Выбрать дату</string>
+    <string name="error_load_userlist">Не удалось загрузить список</string>
+    <string name="title_user_list">Список пользователей</string>
+    <string name="delete">Удалить</string>
 </resources>

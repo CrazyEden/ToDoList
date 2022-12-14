@@ -23,8 +23,10 @@
         app:srcCompat="@drawable/ic_no_ethernet" />
     <com.google.android.material.floatingactionbutton.FloatingActionButton
         android:id="@+id/buttonAddTodo"
+        android:src="@drawable/ic_create"
         android:layout_margin="10dp"
         android:layout_gravity="end|bottom"
         android:layout_width="wrap_content"
-        android:layout_height="wrap_content"/>
+        android:layout_height="wrap_content"
+        tools:ignore="ContentDescription" />
 </FrameLayout>

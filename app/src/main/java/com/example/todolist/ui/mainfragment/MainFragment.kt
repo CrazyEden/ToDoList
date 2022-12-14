@@ -9,13 +9,13 @@ import android.net.ConnectivityManager
 import android.net.NetworkCapabilities
 import android.os.Bundle
 import android.util.Log
-import android.view.LayoutInflater
-import android.view.View
-import android.view.ViewGroup
+import android.view.*
 import android.widget.PopupMenu
 import android.widget.Toast
+import androidx.core.view.MenuProvider
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
+import androidx.lifecycle.Lifecycle
 import com.example.todolist.R
 import com.example.todolist.data.model.Todo
 import com.example.todolist.data.model.UserData
@@ -45,17 +45,35 @@ class MainFragment : Fragment(){
         initVars()
         checkInternetAccess()
         initViewModelObservers()
+        inflateToolbarMenu()
         vModel.loadDataByUserId(targetShowingId)
-
         binding.buttonAddTodo.setOnClickListener {
             openDialogToCreateNewTodo()
         }
-        binding.buttonAddTodo.setOnLongClickListener {
-            runCatching { popupMenu.show() }
-                .getOrElse { Toast.makeText(requireContext(),"не удалось загрузить список",Toast.LENGTH_LONG).show()}
-            true
-        }
         return binding.root
+    }
+
+    private fun inflateToolbarMenu() {
+        val menuProvider = object : MenuProvider {
+            override fun onCreateMenu(menu: Menu, menuInflater: MenuInflater) =
+                menuInflater.inflate(R.menu.main_menu, menu)
+
+            override fun onMenuItemSelected(menuItem: MenuItem): Boolean {
+                return when (menuItem.itemId) {
+                    R.id.showListUsers -> {
+                        runCatching { popupMenu.show() }
+                            .getOrElse {
+                                Log.e(TAG,"popupmenu isn't inflated")
+                                Toast.makeText(requireContext(),getString(R.string.error_load_userlist),Toast.LENGTH_LONG).show()
+                            }
+                        true
+                    }
+
+                    else -> false
+                }
+            }
+        }
+        requireActivity().addMenuProvider(menuProvider,viewLifecycleOwner,Lifecycle.State.RESUMED)
     }
 
     private fun initViewModelObservers() {
@@ -67,12 +85,10 @@ class MainFragment : Fragment(){
             isCurrentUserAtHerselfPageOrAdmin = (isCurrentUserAdmin || currentAuthId == targetShowingId)
             Log.i(TAG,"adminIdLiveData observe string \"$it\" | your id \"$currentAuthId\" \n" +
                     "isShowHidedTodo \"$isCurrentUserAtHerselfPageOrAdmin\" | isAdmin \"$isCurrentUserAdmin\"")
-            adapter = ToDoAdapter(listWasUpdated = { uploadDataToFirebase() },
-                isShowSecretTodo = isCurrentUserAtHerselfPageOrAdmin,
-                isAdmin = isCurrentUserAdmin
-            )
+            adapter = ToDoAdapter(isCurrentUserAtHerselfPageOrAdmin){ uploadDataToFirebase() }
 
             binding.rcView.adapter = adapter
+            activity?.title = localData?.userId
             adapter.setData(localData?.listTodo)
         }
         vModel.dataInFirebaseLiveData.observe(viewLifecycleOwner){
@@ -80,13 +96,13 @@ class MainFragment : Fragment(){
 
             binding.imageNoEthernet.visibility = View.GONE
             Log.i(TAG,"dataInFirebaseLiveData observe for id  \"${it.userId}\"")
-            if(localData==null) return@observe adapter.setData(it.listTodo)
-            if (localData == it) return@observe
             activity?.title = it.userId
-
-            if (localData?.dateLastEdit!! < it.dateLastEdit!!)
+            if(localData==null)
+                return@observe adapter.setData(it.listTodo)
+            if (localData == it)
+                return@observe
+            if (adapter.getRawList() != it.listTodo)
                 adapter.setData(it.listTodo)
-            else uploadDataToFirebase()
         }
         vModel.listCurrentUsers.observe(viewLifecycleOwner){ it ->
             if (it.isEmpty()) return@observe
@@ -160,6 +176,7 @@ class MainFragment : Fragment(){
     }
 
     private fun uploadDataToFirebase(){
+        checkInternetAccess()
         val data = adapter.getDatabaseData(getCurrentTime(), userId = targetShowingId)
         vModel.saveData(targetShowingId,data)
     }

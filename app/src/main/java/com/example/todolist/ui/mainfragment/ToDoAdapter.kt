@@ -9,8 +9,8 @@ import android.view.View
 import android.view.ViewGroup
 import android.view.inputmethod.EditorInfo
 import android.widget.PopupMenu
-import androidx.core.view.isVisible
 import androidx.recyclerview.widget.RecyclerView
+import com.example.todolist.R
 import com.example.todolist.data.model.SubTodo
 import com.example.todolist.data.model.Todo
 import com.example.todolist.data.model.UserData
@@ -20,9 +20,8 @@ import com.google.gson.Gson
 
 typealias ListWasUpdated = (list:MutableList<Todo>) -> Unit
 
-class ToDoAdapter(private val listWasUpdated: ListWasUpdated,
-                  private var isShowSecretTodo:Boolean = false,
-                  private var isAdmin:Boolean = false):RecyclerView.Adapter<ToDoAdapter.ToDoViewHolder>() {
+class ToDoAdapter(private var isShowSecretTodo:Boolean = false,
+                          private val listWasUpdated: ListWasUpdated):RecyclerView.Adapter<ToDoAdapter.ToDoViewHolder>() {
     class ToDoViewHolder(val binding:ItemTodoBinding):RecyclerView.ViewHolder(binding.root)
 
     private var listToDo = mutableListOf<Todo>()
@@ -54,12 +53,16 @@ class ToDoAdapter(private val listWasUpdated: ListWasUpdated,
             return
         }
 
+        if(item.secretToDo) holder.binding.iconSecretTodo.visibility = View.VISIBLE
+
         val subTodoAdapter = SubTodoAdapter{
             listToDo[position].subTodo = it
+            Log.i(TAG, "list was updated. cause:subTodo")
             listWasUpdated(listToDo)
         }
         holder.binding.rcViewSubTodo.adapter = subTodoAdapter
         subTodoAdapter.setData(item.subTodo)
+
         holder.binding.buttonAddSubTodo.setOnClickListener {
             val subStr = holder.binding.textSubTodo.text.toString()
             if (subStr.isEmpty()) return@setOnClickListener
@@ -73,25 +76,13 @@ class ToDoAdapter(private val listWasUpdated: ListWasUpdated,
             subTodoAdapter.addData(SubTodo(string = subStr))
         }
 
-
         holder.binding.titleTodo.text = item.titleToDo
-        if (!isAdmin) holder.binding.secretTodoLayout.visibility = View.GONE
-        else holder.binding.checkBoxIsTodoSecret.apply {
-            isChecked = item.secretToDo
-            setOnCheckedChangeListener { _, isChecked ->
-                item.secretToDo = isChecked
-                listWasUpdated(listToDo)
-            }
-        }
 
-        holder.binding.root.setOnClickListener {
-            if (holder.binding.commentLayout.isVisible)
-                holder.binding.commentLayout.visibility = View.GONE
-            else holder.binding.commentLayout.visibility = View.VISIBLE
-        }
+        if (!isShowSecretTodo)holder.binding.titleTodo.visibility = View.GONE
+
         holder.binding.titleTodo.setOnLongClickListener { view ->
             val popupMenu = PopupMenu(holder.itemView.context,view)
-            popupMenu.menu.add("удолить")
+            popupMenu.menu.add(holder.itemView.context.getString(R.string.delete))
             popupMenu.setOnMenuItemClickListener {
                 if (it.itemId == 0) {
                     Log.i(TAG, "removed item ToDo at position $position")
@@ -106,8 +97,6 @@ class ToDoAdapter(private val listWasUpdated: ListWasUpdated,
             true
         }
 
-
-
         holder.binding.notes.apply {
             if (isShowSecretTodo) visibility = View.VISIBLE
             else return@apply
@@ -119,6 +108,7 @@ class ToDoAdapter(private val listWasUpdated: ListWasUpdated,
                     val str = view.text.toString()
                     if (str == listToDo[position].notes) return@setOnEditorActionListener true
                     listToDo[position].notes = str
+                    Log.i(TAG, "list was updated. cause : edit note")
                     listWasUpdated(listToDo)
                     return@setOnEditorActionListener false
                 }
@@ -151,6 +141,7 @@ class ToDoAdapter(private val listWasUpdated: ListWasUpdated,
             userId =userId
         )
 
+    fun getRawList() = listToDo
 }
 
 
