@@ -49,7 +49,7 @@ class SubTodoAdapter(val subTodoWasUpdated:SubTodoWasUpdated) : RecyclerView.Ada
             setTextColor(if (item.isCompleted) Color.GREEN else Color.RED)
         }
         holder.binding.imageButton.setOnClickListener {
-            Log.i(TAG,"item was removed at position $position")
+            Log.i(TAG,"removed item SubToDo at position $position")
             list.removeAt(position)
             notifyItemRemoved(position)
             notifyItemRangeChanged(position,list.size)

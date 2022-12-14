@@ -8,6 +8,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.view.inputmethod.EditorInfo
+import android.widget.PopupMenu
 import androidx.core.view.isVisible
 import androidx.recyclerview.widget.RecyclerView
 import com.example.todolist.data.model.SubTodo
@@ -24,10 +25,10 @@ class ToDoAdapter(private val listWasUpdated: ListWasUpdated,
                   private var isAdmin:Boolean = false):RecyclerView.Adapter<ToDoAdapter.ToDoViewHolder>() {
     class ToDoViewHolder(val binding:ItemTodoBinding):RecyclerView.ViewHolder(binding.root)
 
-    private val listToDo = mutableListOf<Todo>()
+    private var listToDo = mutableListOf<Todo>()
     fun setData(list:List<Todo>?){
         if (list == null) return
-        listToDo.addAll(list.sortedBy { it.deadlineLong })
+        listToDo = list.sortedBy { it.deadlineLong }.toMutableList()
         notifyDataSetChanged()
     }
 
@@ -87,6 +88,22 @@ class ToDoAdapter(private val listWasUpdated: ListWasUpdated,
             if (holder.binding.commentLayout.isVisible)
                 holder.binding.commentLayout.visibility = View.GONE
             else holder.binding.commentLayout.visibility = View.VISIBLE
+        }
+        holder.binding.titleTodo.setOnLongClickListener { view ->
+            val popupMenu = PopupMenu(holder.itemView.context,view)
+            popupMenu.menu.add("удолить")
+            popupMenu.setOnMenuItemClickListener {
+                if (it.itemId == 0) {
+                    Log.i(TAG, "removed item ToDo at position $position")
+                    listToDo.removeAt(position)
+                    notifyItemRemoved(position)
+                    notifyItemRangeChanged(position, listToDo.size)
+                    listWasUpdated(listToDo)
+                }
+                true
+            }
+            popupMenu.show()
+            true
         }
 
 
