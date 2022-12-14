@@ -7,5 +7,5 @@ data class Todo(
     var isCompleted:Boolean = false,
     var subTodo: MutableList<SubTodo>? = mutableListOf(),
     var deadlineLong: Long = 0,
-    var deadlineString: String? = null,
-    )
+    var deadlineString: String? = null
+)

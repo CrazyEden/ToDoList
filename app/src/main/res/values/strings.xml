@@ -14,6 +14,6 @@
     <string name="cancel">Отмена</string>
     <string name="create">Создать</string>
     <string name="create_new_todo">Создание новой ToDO</string>
-    <string name="select_datatime_hint">Выбирите дату</string>
+    <string name="select_datetime_hint">Выбирите дату</string>
     <string name="pick_datetime">Выбрать дату</string>
 </resources>

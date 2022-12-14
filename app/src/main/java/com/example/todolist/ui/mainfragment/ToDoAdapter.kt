@@ -1,6 +1,7 @@
 package com.example.todolist.ui.mainfragment
 
 import android.app.ActionBar.LayoutParams
+import android.graphics.Color
 import android.text.InputType
 import android.util.Log
 import android.view.LayoutInflater
@@ -23,18 +24,16 @@ class ToDoAdapter(private val listWasUpdated: ListWasUpdated,
                   private var isAdmin:Boolean = false):RecyclerView.Adapter<ToDoAdapter.ToDoViewHolder>() {
     class ToDoViewHolder(val binding:ItemTodoBinding):RecyclerView.ViewHolder(binding.root)
 
-    private var list = mutableListOf<Todo>()
-    init { Log.i(TAG,"ToDoAdapter is created") }
+    private val listToDo = mutableListOf<Todo>()
     fun setData(list:List<Todo>?){
-        this.list = list?.toMutableList() ?: return
-        list.sortedBy { it.deadlineLong }
+        if (list == null) return
+        listToDo.addAll(list.sortedBy { it.deadlineLong })
         notifyDataSetChanged()
     }
 
     fun addData(item: Todo){
-        list.add(item)
-        list.sortedBy { it.deadlineLong }
-        notifyItemInserted(list.size)
+        listToDo.add(0,item)
+        notifyItemInserted(0)
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ToDoViewHolder {
@@ -45,7 +44,7 @@ class ToDoAdapter(private val listWasUpdated: ListWasUpdated,
 
     override fun onBindViewHolder(holder: ToDoViewHolder, position: Int) {
         Log.i(TAG,"starting inflate item, position \"$position\"")
-        val item= list[position]
+        val item= listToDo[position]
 
         if (!isShowSecretTodo && item.secretToDo){ //hide item if no access
             holder.binding.root.visibility = View.GONE
@@ -55,8 +54,8 @@ class ToDoAdapter(private val listWasUpdated: ListWasUpdated,
         }
 
         val subTodoAdapter = SubTodoAdapter{
-            list[position].subTodo = it
-            listWasUpdated(list)
+            listToDo[position].subTodo = it
+            listWasUpdated(listToDo)
         }
         holder.binding.rcViewSubTodo.adapter = subTodoAdapter
         subTodoAdapter.setData(item.subTodo)
@@ -69,7 +68,7 @@ class ToDoAdapter(private val listWasUpdated: ListWasUpdated,
                 clearFocus()
             }
             item.subTodo?.add(SubTodo(string = subStr))
-            listWasUpdated(list)
+            listWasUpdated(listToDo)
             subTodoAdapter.addData(SubTodo(string = subStr))
         }
 
@@ -80,7 +79,7 @@ class ToDoAdapter(private val listWasUpdated: ListWasUpdated,
             isChecked = item.secretToDo
             setOnCheckedChangeListener { _, isChecked ->
                 item.secretToDo = isChecked
-                listWasUpdated(list)
+                listWasUpdated(listToDo)
             }
         }
 
@@ -101,34 +100,37 @@ class ToDoAdapter(private val listWasUpdated: ListWasUpdated,
                 if (actionId == EditorInfo.IME_ACTION_DONE) {
                     view.clearFocus()
                     val str = view.text.toString()
-                    if (str == list[position].notes) return@setOnEditorActionListener true
-                    list[position].notes = str
-                    listWasUpdated(list)
+                    if (str == listToDo[position].notes) return@setOnEditorActionListener true
+                    listToDo[position].notes = str
+                    listWasUpdated(listToDo)
                     return@setOnEditorActionListener false
                 }
                 false
             }
         }
-        holder.binding.duration.apply {
-//            text = item.duration
-//            when(item.duration){
-//                "День"-> Color.RED
-//                "Неделя"-> Color.YELLOW
-//                "Месяц"-> Color.CYAN
-//                "Квартал"-> Color.GREEN
-//                else-> null
-//            }?.let { setTextColor(it) }
+        holder.binding.deadline.apply {
+            text = item.deadlineString
+            val timeLeftBeforeDeadline = item.deadlineLong - MainFragment.getCurrentTime()
+            setTextColor(when{
+                timeLeftBeforeDeadline < 1 -> Color.BLACK                                //deadline was left
+                timeLeftBeforeDeadline > 7889229000 -> Color.GREEN                       //3 month+
+                timeLeftBeforeDeadline > 2629743000 -> Color.CYAN                        //month+
+                timeLeftBeforeDeadline > 604800000 -> Color.YELLOW                       //week+
+                timeLeftBeforeDeadline > 86400000 -> Color.parseColor("#FFA500")// > day && < week
+                timeLeftBeforeDeadline < 86400000 -> Color.RED                           //day
+                else -> Log.wtf(TAG, "unknown time $timeLeftBeforeDeadline")
+            })
         }
 
 
     }
-    override fun getItemCount(): Int = list.size
+    override fun getItemCount(): Int = listToDo.size
 
-    fun toJson(userId:String): String = Gson().toJson(UserData(MainFragment.getCurrentTime(),list,userId))
+    fun toJson(userId:String): String = Gson().toJson(UserData(MainFragment.getCurrentTime(),listToDo,userId))
 
     fun getDatabaseData(date:Long, userId:String) =
         UserData(dateLastEdit =date,
-            listTodo =list,
+            listTodo =listToDo,
             userId =userId
         )
 
