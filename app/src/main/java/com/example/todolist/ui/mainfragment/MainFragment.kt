@@ -47,6 +47,11 @@ class MainFragment : Fragment(){
         initViewModelObservers()
         inflateToolbarMenu()
         vModel.loadDataByUserId(targetShowingId)
+        binding.rcView.setOnScrollChangeListener { _, _, scrollY, _, oldScrollY ->
+            if (scrollY == 0) return@setOnScrollChangeListener binding.buttonAddTodo.show()
+            if (scrollY > oldScrollY) binding.buttonAddTodo.hide()
+            else binding.buttonAddTodo.show()
+        }
         binding.buttonAddTodo.setOnClickListener {
             openDialogToCreateNewTodo()
         }
@@ -64,7 +69,7 @@ class MainFragment : Fragment(){
                         runCatching { popupMenu.show() }
                             .getOrElse {
                                 Log.e(TAG,"popupmenu isn't inflated")
-                                Toast.makeText(requireContext(),getString(R.string.error_load_userlist),Toast.LENGTH_LONG).show()
+                                Toast.makeText(requireContext(),getString(R.string.error_load_user_list),Toast.LENGTH_LONG).show()
                             }
                         true
                     }
@@ -78,7 +83,7 @@ class MainFragment : Fragment(){
 
     private fun initViewModelObservers() {
         vModel.adminIdLiveData.observe(viewLifecycleOwner){
-            if (it==null) return@observe showEthernetErrorIcon()
+            if (it==null) return@observe checkInternetAccess()
 
             binding.imageNoEthernet.visibility = View.GONE
             isCurrentUserAdmin =  currentAuthId == it
@@ -92,7 +97,7 @@ class MainFragment : Fragment(){
             adapter.setData(localData?.listTodo)
         }
         vModel.dataInFirebaseLiveData.observe(viewLifecycleOwner){
-            if (it==null) return@observe showEthernetErrorIcon()
+            if (it==null) return@observe checkInternetAccess()
 
             binding.imageNoEthernet.visibility = View.GONE
             Log.i(TAG,"dataInFirebaseLiveData observe for id  \"${it.userId}\"")
@@ -153,7 +158,7 @@ class MainFragment : Fragment(){
             val format = SimpleDateFormat("dd.MM.yyyy HH:mm", Locale("ru"))
             val dateStr = "$day $hour:$minutes" // 31.12.2022 23:59
             val timeAsLong = format.parse(dateStr)?.time!! //"31.12.2022 23:59" converting to Long "1672520340000"
-            Log.wtf(TAG,"picked datetime \"$timeAsLong\" | Long \"$dateStr\"")
+            Log.wtf(TAG,"picked datetime \"$dateStr\" | Long \"$timeAsLong\"")
             dialogBinding.textViewDatetime.text = dateStr // text will using for ToDо.deadlineString
             dialogBinding.textViewDatetime.tag = timeAsLong // tag will using for ToDо.deadlineLong
         },0,0,true).show()
