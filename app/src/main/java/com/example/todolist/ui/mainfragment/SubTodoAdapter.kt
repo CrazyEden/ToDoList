@@ -7,7 +7,7 @@ import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
 import com.example.todolist.data.model.SubTodo
 import com.example.todolist.databinding.SubTodoBinding
-import com.example.todolist.ui.TAG
+import com.example.todolist.ui.activity.TAG
 
 typealias SubTodoWasUpdated = (list:MutableList<SubTodo>) -> Unit
 

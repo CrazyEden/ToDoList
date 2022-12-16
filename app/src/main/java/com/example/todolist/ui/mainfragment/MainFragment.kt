@@ -4,7 +4,6 @@ import android.app.AlertDialog
 import android.app.DatePickerDialog
 import android.app.TimePickerDialog
 import android.content.Context
-import android.content.SharedPreferences
 import android.net.ConnectivityManager
 import android.net.NetworkCapabilities
 import android.os.Bundle
@@ -21,17 +20,17 @@ import com.example.todolist.data.model.Todo
 import com.example.todolist.data.model.UserData
 import com.example.todolist.databinding.DialogCreateNewTodoBinding
 import com.example.todolist.databinding.FragmentMainBinding
-import com.example.todolist.ui.TAG
-import com.google.gson.Gson
+import com.example.todolist.ui.SettingsFragment
+import com.example.todolist.ui.activity.TAG
+import dagger.hilt.android.AndroidEntryPoint
 import java.text.SimpleDateFormat
 import java.util.*
 
-
+@AndroidEntryPoint
 class MainFragment : Fragment(){
 
     private lateinit var binding: FragmentMainBinding
     private lateinit var adapter: ToDoAdapter
-    private lateinit var sharedPreferences:SharedPreferences
     private lateinit var targetShowingId:String
     private lateinit var currentAuthId:String
     private lateinit var popupMenu:PopupMenu
@@ -41,12 +40,13 @@ class MainFragment : Fragment(){
     private var isCurrentUserAtHerselfPageOrAdmin = false
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
+        if (savedInstanceState !=null) return binding.root
         binding = FragmentMainBinding.inflate(inflater, container, false)
         initVars()
         checkInternetAccess()
         initViewModelObservers()
         inflateToolbarMenu()
-        vModel.loadDataByUserId(targetShowingId)
+        vModel.loadAdminId(targetShowingId)
         binding.rcView.setOnScrollChangeListener { _, _, scrollY, _, oldScrollY ->
             if (scrollY == 0) return@setOnScrollChangeListener binding.buttonAddTodo.show()
             if (scrollY > oldScrollY) binding.buttonAddTodo.hide()
@@ -71,6 +71,13 @@ class MainFragment : Fragment(){
                                 Log.e(TAG,"popupmenu isn't inflated")
                                 Toast.makeText(requireContext(),getString(R.string.error_load_user_list),Toast.LENGTH_LONG).show()
                             }
+                        true
+                    }
+                    R.id.settings -> {
+                        parentFragmentManager.beginTransaction()
+                            .addToBackStack(null)
+                            .replace(R.id.container,SettingsFragment())
+                            .commit()
                         true
                     }
 
@@ -165,17 +172,16 @@ class MainFragment : Fragment(){
     }
 
     private fun initVars(){
-        sharedPreferences = requireContext().getSharedPreferences("data", Context.MODE_PRIVATE)
-        val json = sharedPreferences.getString("history",null)
-        localData = Gson().fromJson(json, UserData::class.java)
+
+        localData = vModel.getUserData()
         currentAuthId = arguments?.getString("userId")!!
-        targetShowingId = sharedPreferences.getString("uid", currentAuthId)!!
+        targetShowingId = currentAuthId
         popupMenu = PopupMenu(context,binding.buttonAddTodo)
         popupMenu.setOnMenuItemClickListener {
             val tempStr = it.title.toString()
             targetShowingId = tempStr
             Log.i(TAG, "in popup menu was selected item \"$tempStr\"")
-            vModel.loadDataByUserId(tempStr)
+            vModel.loadTodo(tempStr)
             true
         }
     }
@@ -187,7 +193,7 @@ class MainFragment : Fragment(){
     }
 
     override fun onPause() {
-        sharedPreferences.edit().putString("history",adapter.toJson(currentAuthId)).apply()
+        vModel.saveUserData(adapter.toJson(currentAuthId))
         super.onPause()
     }
     

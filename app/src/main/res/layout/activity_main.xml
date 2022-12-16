@@ -7,4 +7,4 @@
     android:id="@+id/container"
     android:name="com.example.todolist.ui.SignInFragment"
     tools:layout="@layout/fragment_sign_in"
-    tools:context="ui.MainActivity"/>
+    tools:context=".ui.activity.MainActivity"/>

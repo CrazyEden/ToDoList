@@ -15,7 +15,7 @@ import com.example.todolist.data.model.SubTodo
 import com.example.todolist.data.model.Todo
 import com.example.todolist.data.model.UserData
 import com.example.todolist.databinding.ItemTodoBinding
-import com.example.todolist.ui.TAG
+import com.example.todolist.ui.activity.TAG
 import com.google.gson.Gson
 
 typealias ListWasUpdated = (list:MutableList<Todo>) -> Unit

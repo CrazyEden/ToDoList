@@ -16,13 +16,11 @@ import androidx.fragment.app.Fragment
 import com.example.todolist.R
 import com.example.todolist.databinding.DialogSignInByEmailAndPasswordBinding
 import com.example.todolist.databinding.FragmentSignInBinding
+import com.example.todolist.ui.activity.TAG
 import com.example.todolist.ui.mainfragment.MainFragment
 import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.android.gms.auth.api.signin.GoogleSignInClient
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions
-import com.google.firebase.FirebaseApp
-import com.google.firebase.appcheck.FirebaseAppCheck
-import com.google.firebase.appcheck.safetynet.SafetyNetAppCheckProviderFactory
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseUser
 import com.google.firebase.auth.GoogleAuthProvider
@@ -44,29 +42,27 @@ class SignInFragment : Fragment() {
 
         auth = Firebase.auth
         currentUser = auth.currentUser
-        FirebaseApp.initializeApp(requireContext())
-        val firebaseAppCheck = FirebaseAppCheck.getInstance()
-        firebaseAppCheck.installAppCheckProviderFactory(SafetyNetAppCheckProviderFactory.getInstance())
 
-        if (currentUser!=null)openFragment(bundleOf("userId" to currentUser!!.uid))
-        else {
-            launcher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {
-                val task = GoogleSignIn.getSignedInAccountFromIntent(it.data)
-                if (task.isSuccessful) {
-                    val acc = task.result
-                    acc.idToken?.let { idToken -> fireAuth(idToken) }
-                } else Log.wtf("xdd", "sign in is canceled")
-            }
-            binding.buttonGoogleSignIn.apply {
-                visibility = View.VISIBLE
-                setOnClickListener { singInGoogle() }
-            }
-            binding.buttonEmailAndPasswordSignIn.apply {
-                visibility = View.VISIBLE
-                setOnClickListener { singInByPassword() }
-            }
+        if (currentUser!=null) {
+            openFragment(bundleOf("userId" to currentUser!!.uid))
+            return binding.root
         }
 
+        launcher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {
+            val task = GoogleSignIn.getSignedInAccountFromIntent(it.data)
+            if (task.isSuccessful) {
+                val acc = task.result
+                acc.idToken?.let { idToken -> fireAuth(idToken) }
+            } else Log.wtf("xdd", "sign in is canceled")
+        }
+        binding.buttonGoogleSignIn.apply {
+            visibility = View.VISIBLE
+            setOnClickListener { singInGoogle() }
+        }
+        binding.buttonEmailAndPasswordSignIn.apply {
+            visibility = View.VISIBLE
+            setOnClickListener { singInByPassword() }
+        }
         return binding.root
     }
 

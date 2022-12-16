@@ -5,5 +5,9 @@
             android:id="@+id/showListUsers"
             android:title="@string/title_user_list"
             android:orderInCategory="0"/>
+        <item
+            android:id="@+id/settings"
+            android:title="@string/settings"
+            android:orderInCategory="1"/>
     </group>
 </menu>
