@@ -9,5 +9,9 @@
             android:id="@+id/settings"
             android:title="@string/settings"
             android:orderInCategory="1"/>
+        <item
+            android:id="@+id/changeNickname"
+            android:title="@string/change_nickname"
+            android:orderInCategory="1"/>
     </group>
 </menu>

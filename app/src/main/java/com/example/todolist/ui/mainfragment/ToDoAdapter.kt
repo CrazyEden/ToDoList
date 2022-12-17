@@ -11,6 +11,7 @@ import android.view.inputmethod.EditorInfo
 import android.widget.PopupMenu
 import androidx.recyclerview.widget.RecyclerView
 import com.example.todolist.R
+import com.example.todolist.data.model.Data
 import com.example.todolist.data.model.SubTodo
 import com.example.todolist.data.model.Todo
 import com.example.todolist.data.model.UserData
@@ -133,12 +134,12 @@ class ToDoAdapter(private var isShowSecretTodo:Boolean = false,
     }
     override fun getItemCount(): Int = listToDo.size
 
-    fun toJson(userId:String): String = Gson().toJson(UserData(MainFragment.getCurrentTime(),listToDo,userId))
+    fun toJson(userId:String): String = Gson().toJson(Data(listToDo, UserData(userId)))
 
-    fun getDatabaseData(date:Long, userId:String) =
-        UserData(dateLastEdit =date,
+    fun getDatabaseData(userId:String,nickname:String) =
+        Data(
             listTodo =listToDo,
-            userId =userId
+            UserData(userId,nickname)
         )
 
     fun getRawList() = listToDo

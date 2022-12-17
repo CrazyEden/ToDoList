@@ -16,8 +16,9 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.Lifecycle
 import com.example.todolist.R
+import com.example.todolist.data.model.Data
 import com.example.todolist.data.model.Todo
-import com.example.todolist.data.model.UserData
+import com.example.todolist.databinding.DialogChangeNicknameBinding
 import com.example.todolist.databinding.DialogCreateNewTodoBinding
 import com.example.todolist.databinding.FragmentMainBinding
 import com.example.todolist.ui.SettingsFragment
@@ -32,10 +33,11 @@ class MainFragment : Fragment(){
     private lateinit var binding: FragmentMainBinding
     private lateinit var adapter: ToDoAdapter
     private lateinit var targetShowingId:String
+    private lateinit var targetShowingNick:String
     private lateinit var currentAuthId:String
     private lateinit var popupMenu:PopupMenu
     private val vModel: MainViewModel by viewModels()
-    private var localData: UserData? = null
+    private var localData: Data? = null
     private var isCurrentUserAdmin = false
     private var isCurrentUserAtHerselfPageOrAdmin = false
 
@@ -80,6 +82,10 @@ class MainFragment : Fragment(){
                             .commit()
                         true
                     }
+                    R.id.changeNickname ->{
+                        openDialogToChangeNickName(activity?.title as String? ?:"")
+                        true
+                    }
 
                     else -> false
                 }
@@ -100,15 +106,14 @@ class MainFragment : Fragment(){
             adapter = ToDoAdapter(isCurrentUserAtHerselfPageOrAdmin){ uploadDataToFirebase() }
 
             binding.rcView.adapter = adapter
-            activity?.title = localData?.userId
+
             adapter.setData(localData?.listTodo)
         }
         vModel.dataInFirebaseLiveData.observe(viewLifecycleOwner){
             if (it==null) return@observe checkInternetAccess()
 
             binding.imageNoEthernet.visibility = View.GONE
-            Log.i(TAG,"dataInFirebaseLiveData observe for id  \"${it.userId}\"")
-            activity?.title = it.userId
+
             if(localData==null)
                 return@observe adapter.setData(it.listTodo)
             if (localData == it)
@@ -119,10 +124,20 @@ class MainFragment : Fragment(){
         vModel.listCurrentUsers.observe(viewLifecycleOwner){ it ->
             if (it.isEmpty()) return@observe
             popupMenu.menu.clear()
-            it.forEach { popupMenu.menu.add(it) }
+            mapOfNicknamesAndIds.clear()
+            it.forEach {
+                if (it?.nickname == null) it?.nickname = it?.userId
+                if(it?.userId==null) return@observe
+                mapOfNicknamesAndIds[it.nickname!!] = it.userId!!
+                popupMenu.menu.add(it.nickname)
+            }
+        }
+        vModel.userDataLiveData.observe(viewLifecycleOwner){
+            targetShowingNick = it?.nickname.toString()
+            activity?.title = it?.nickname
         }
     }
-
+    private var mapOfNicknamesAndIds:MutableMap<String,String> = mutableMapOf()
     private fun openDialogToCreateNewTodo() {
         val dialogBinding = DialogCreateNewTodoBinding.inflate(layoutInflater)
         if (isCurrentUserAdmin) dialogBinding.dialogCheckbox.visibility = View.VISIBLE
@@ -166,9 +181,28 @@ class MainFragment : Fragment(){
             val dateStr = "$day $hour:$minutes" // 31.12.2022 23:59
             val timeAsLong = format.parse(dateStr)?.time!! //"31.12.2022 23:59" converting to Long "1672520340000"
             Log.wtf(TAG,"picked datetime \"$dateStr\" | Long \"$timeAsLong\"")
-            dialogBinding.textViewDatetime.text = dateStr // text will using for ToDо.deadlineString
+            dialogBinding.textViewDatetime.text = dateStr   // text will using for ToDо.deadlineString
             dialogBinding.textViewDatetime.tag = timeAsLong // tag will using for ToDо.deadlineLong
         },0,0,true).show()
+    }
+
+    private fun openDialogToChangeNickName(oldNick:String?){
+        val dialogChangeNicknameBinding = DialogChangeNicknameBinding.inflate(layoutInflater)
+        dialogChangeNicknameBinding.nicknameEditTextView.setText(oldNick)
+        AlertDialog.Builder(context)
+            .setView(dialogChangeNicknameBinding.root)
+            .setPositiveButton(R.string.apply) { _, _ ->
+                val newNickname = dialogChangeNicknameBinding.nicknameEditTextView.text.toString()
+                if (newNickname.isNotEmpty()) {
+                    activity?.title = newNickname
+                    vModel.updateNickName(nickname = newNickname, targetShowingId = targetShowingId)
+                }
+            }
+            .setNegativeButton(getString(R.string.cancel)){ dialog, _ ->
+                dialog.dismiss()
+            }
+            .setTitle(R.string.change_nickname)
+            .show()
     }
 
     private fun initVars(){
@@ -176,19 +210,23 @@ class MainFragment : Fragment(){
         localData = vModel.getUserData()
         currentAuthId = arguments?.getString("userId")!!
         targetShowingId = currentAuthId
+
         popupMenu = PopupMenu(context,binding.buttonAddTodo)
         popupMenu.setOnMenuItemClickListener {
             val tempStr = it.title.toString()
-            targetShowingId = tempStr
-            Log.i(TAG, "in popup menu was selected item \"$tempStr\"")
-            vModel.loadTodo(tempStr)
+            val key = mapOfNicknamesAndIds[tempStr]!!
+            targetShowingId = key
+            targetShowingNick = tempStr
+            activity?.title = tempStr
+            Log.i(TAG, "in popup menu was selected item \"$key\"")
+            vModel.loadTodo(key)
             true
         }
     }
 
     private fun uploadDataToFirebase(){
         checkInternetAccess()
-        val data = adapter.getDatabaseData(getCurrentTime(), userId = targetShowingId)
+        val data = adapter.getDatabaseData(userId = targetShowingId, nickname = targetShowingNick )
         vModel.saveData(targetShowingId,data)
     }
 

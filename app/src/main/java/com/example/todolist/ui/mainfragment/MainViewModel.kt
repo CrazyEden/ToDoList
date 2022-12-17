@@ -4,6 +4,7 @@ import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
+import com.example.todolist.data.model.Data
 import com.example.todolist.data.model.UserData
 import com.example.todolist.data.services.LocalDataService
 import com.example.todolist.ui.activity.TAG
@@ -22,10 +23,10 @@ class MainViewModel @Inject constructor(
 
     private val _adminIdLiveData = MutableLiveData<String?>()
     val adminIdLiveData: LiveData<String?> = _adminIdLiveData
-    private val _dataInFirebaseLiveData = MutableLiveData<UserData?>()
-    val dataInFirebaseLiveData: LiveData<UserData?> = _dataInFirebaseLiveData
-    private val _listCurrentUsers = MutableLiveData<List<String?>>()
-    val listCurrentUsers: LiveData<List<String?>> = _listCurrentUsers
+    private val _dataInFirebaseLiveData = MutableLiveData<Data?>()
+    val dataInFirebaseLiveData: LiveData<Data?> = _dataInFirebaseLiveData
+    private val _listCurrentUsers = MutableLiveData<List<UserData?>>()
+    val listCurrentUsers: LiveData<List<UserData?>> = _listCurrentUsers
 
     private var database = Firebase.database("https://todo-b94ed-default-rtdb.firebaseio.com")
 
@@ -41,7 +42,7 @@ class MainViewModel @Inject constructor(
             init { obj2 = this }
             override fun onDataChange(snapshot: DataSnapshot) {
 
-                val data = snapshot.getValue(UserData::class.java)
+                val data = snapshot.getValue(Data::class.java)
                 _dataInFirebaseLiveData.postValue(data)
             }
             override fun onCancelled(error: DatabaseError) {
@@ -56,16 +57,32 @@ class MainViewModel @Inject constructor(
             val admId = it.result.getValue(String::class.java).toString()
             _adminIdLiveData.postValue(admId)
             loadTodo(id)
+            loadUserData(id)
         }
         database.getReference("data").get().addOnCompleteListener { task->
-            val b = task.result.children.map { it.key }.toList()//list of users with data
+            val b = task.result.children.map{
+                UserData(it.key,it.child("userData").child("nickname").getValue(String::class.java))
+            }.toList()//list of users with data
             _listCurrentUsers.postValue(b)
         }
     }
-    fun saveData(targetShowingId:String,dataForSave: UserData){
+    private val _userDataLiveData = MutableLiveData<UserData?>()
+    val userDataLiveData : LiveData<UserData?> = _userDataLiveData
+    private fun loadUserData(id:String){
+        database.getReference("data").child(id).child("userData").get().addOnCompleteListener {
+            _userDataLiveData.postValue(it.result.getValue(UserData::class.java))
+        }
+    }
+    fun saveData(targetShowingId:String,dataForSave: Data){
         database.getReference("data").child(targetShowingId)
             .setValue(dataForSave).addOnCompleteListener {
                 Log.i(TAG,"data was uploaded to firebase for id $targetShowingId")
+            }
+    }
+    fun updateNickName(nickname: String,targetShowingId:String){
+        database.getReference("data").child(targetShowingId).child("userData").child("nickname")
+            .setValue(nickname).addOnCompleteListener {
+                Log.i(TAG,"nickname was uploaded to firebase for id $targetShowingId")
             }
     }
 
