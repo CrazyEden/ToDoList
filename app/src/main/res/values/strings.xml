@@ -40,4 +40,6 @@
     <string name="change_nickname">Изменение ника</string>
     <string name="apply">Применить</string>
     <string name="text_a_new_nickname">Введите новый никнейм</string>
+    <string name="password_hint_repeat">Повторите пароль</string>
+    <string name="sign_out">Выйти</string>
 </resources>

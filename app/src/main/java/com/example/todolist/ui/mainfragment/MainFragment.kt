@@ -22,7 +22,10 @@ import com.example.todolist.databinding.DialogChangeNicknameBinding
 import com.example.todolist.databinding.DialogCreateNewTodoBinding
 import com.example.todolist.databinding.FragmentMainBinding
 import com.example.todolist.ui.SettingsFragment
+import com.example.todolist.ui.SignInFragment
 import com.example.todolist.ui.activity.TAG
+import com.google.firebase.auth.ktx.auth
+import com.google.firebase.ktx.Firebase
 import dagger.hilt.android.AndroidEntryPoint
 import java.text.SimpleDateFormat
 import java.util.*
@@ -42,7 +45,6 @@ class MainFragment : Fragment(){
     private var isCurrentUserAtHerselfPageOrAdmin = false
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
-        if (savedInstanceState !=null) return binding.root
         binding = FragmentMainBinding.inflate(inflater, container, false)
         initVars()
         checkInternetAccess()
@@ -86,6 +88,13 @@ class MainFragment : Fragment(){
                         openDialogToChangeNickName(activity?.title as String? ?:"")
                         true
                     }
+                    R.id.sign_out ->{
+                        Firebase.auth.signOut()
+                        parentFragmentManager.beginTransaction()
+                            .replace(R.id.container,SignInFragment())
+                            .commit()
+                        true
+                    }
 
                     else -> false
                 }
@@ -111,15 +120,19 @@ class MainFragment : Fragment(){
         }
         vModel.dataInFirebaseLiveData.observe(viewLifecycleOwner){
             if (it==null) return@observe checkInternetAccess()
-
+            if (it.userData?.userId == currentAuthId){
+                vModel.saveUserData(adapter.toJson(currentAuthId))
+            }
             binding.imageNoEthernet.visibility = View.GONE
 
             if(localData==null)
                 return@observe adapter.setData(it.listTodo)
-            if (localData == it)
-                return@observe
-            if (adapter.getRawList() != it.listTodo)
+
+            if (localData == it) return@observe
+            if (adapter.getRawList() != it.listTodo) {
                 adapter.setData(it.listTodo)
+            }
+
         }
         vModel.listCurrentUsers.observe(viewLifecycleOwner){ it ->
             if (it.isEmpty()) return@observe
@@ -208,7 +221,7 @@ class MainFragment : Fragment(){
     private fun initVars(){
 
         localData = vModel.getUserData()
-        currentAuthId = arguments?.getString("userId")!!
+        currentAuthId = Firebase.auth.currentUser!!.uid
         targetShowingId = currentAuthId
 
         popupMenu = PopupMenu(context,binding.buttonAddTodo)
@@ -231,7 +244,7 @@ class MainFragment : Fragment(){
     }
 
     override fun onPause() {
-        vModel.saveUserData(adapter.toJson(currentAuthId))
+
         super.onPause()
     }
     
