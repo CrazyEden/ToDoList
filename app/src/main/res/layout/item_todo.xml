@@ -69,6 +69,8 @@
 
     <EditText
         android:importantForAutofill="no"
+        android:visibility="gone"
+        tools:visibility="visible"
         android:id="@+id/notes"
         android:imeOptions="actionDone"
         android:inputType="textMultiLine"

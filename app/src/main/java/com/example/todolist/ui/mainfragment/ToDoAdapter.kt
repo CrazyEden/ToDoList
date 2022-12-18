@@ -104,7 +104,10 @@ class ToDoAdapter(private val listWasUpdated: ListWasUpdated):RecyclerView.Adapt
 
         holder.binding.notes.apply {
             if (isShowSecretTodo) visibility = View.VISIBLE
-            else return@apply
+            else {
+                visibility = View.GONE
+                return@apply
+            }
             setText(item.notes)
             setRawInputType(InputType.TYPE_CLASS_TEXT)
             setOnEditorActionListener { view, actionId, _ ->

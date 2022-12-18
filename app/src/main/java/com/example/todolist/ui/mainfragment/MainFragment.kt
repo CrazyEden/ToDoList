@@ -106,12 +106,14 @@ class MainFragment : Fragment(){
 
             binding.imageNoEthernet.visibility = View.GONE
             isCurrentUserAdmin =  currentAuthId == it
-            isCurrentUserAtHerselfPageOrAdmin = (isCurrentUserAdmin || currentAuthId == targetShowingId)
             Log.i(TAG,"adminIdLiveData observe string \"$it\" | your id \"$currentAuthId\" \n" +
                     "isShowHidedTodo \"$isCurrentUserAtHerselfPageOrAdmin\" | isAdmin \"$isCurrentUserAdmin\"")
-            adapter.setPermission(isCurrentUserAtHerselfPageOrAdmin)
         }
         vModel.dataInFirebaseLiveData.observe(viewLifecycleOwner){
+            isCurrentUserAtHerselfPageOrAdmin = (isCurrentUserAdmin || (currentAuthId == targetShowingId))
+            Log.w(TAG, "initViewModelObservers: $isCurrentUserAtHerselfPageOrAdmin")
+            adapter.setPermission(isCurrentUserAtHerselfPageOrAdmin)
+
             if (it==null) return@observe checkInternetAccess()
             if (it.userData?.userId == currentAuthId){
                 vModel.saveUserData(adapter.toJson(currentAuthId))
