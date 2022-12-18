@@ -1,4 +1,4 @@
-package com.example.todolist.data.services
+package com.example.todolist.data.repositories
 
 import android.content.SharedPreferences
 import android.graphics.Color
@@ -6,7 +6,7 @@ import com.example.todolist.data.model.Data
 import com.google.gson.Gson
 import javax.inject.Inject
 
-class LocalDataService @Inject constructor(
+class LocalDataRepository @Inject constructor(
     private val sharedPreferences: SharedPreferences
 ) {
 

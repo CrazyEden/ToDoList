@@ -16,7 +16,6 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.Lifecycle
 import com.example.todolist.R
-import com.example.todolist.data.model.Data
 import com.example.todolist.data.model.Todo
 import com.example.todolist.databinding.DialogChangeNicknameBinding
 import com.example.todolist.databinding.DialogCreateNewTodoBinding
@@ -40,17 +39,14 @@ class MainFragment : Fragment(){
     private lateinit var currentAuthId:String
     private lateinit var popupMenu:PopupMenu
     private val vModel: MainViewModel by viewModels()
-    private var localData: Data? = null
     private var isCurrentUserAdmin = false
     private var isCurrentUserAtHerselfPageOrAdmin = false
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         binding = FragmentMainBinding.inflate(inflater, container, false)
         initVars()
-        checkInternetAccess()
-        initViewModelObservers()
         inflateToolbarMenu()
-        vModel.loadAdminId(targetShowingId)
+        initViewModelObservers()
         binding.rcView.setOnScrollChangeListener { _, _, scrollY, _, oldScrollY ->
             if (scrollY == 0) return@setOnScrollChangeListener binding.buttonAddTodo.show()
             if (scrollY > oldScrollY) binding.buttonAddTodo.hide()
@@ -104,6 +100,7 @@ class MainFragment : Fragment(){
     }
 
     private fun initViewModelObservers() {
+        checkInternetAccess()
         vModel.adminIdLiveData.observe(viewLifecycleOwner){
             if (it==null) return@observe checkInternetAccess()
 
@@ -112,11 +109,7 @@ class MainFragment : Fragment(){
             isCurrentUserAtHerselfPageOrAdmin = (isCurrentUserAdmin || currentAuthId == targetShowingId)
             Log.i(TAG,"adminIdLiveData observe string \"$it\" | your id \"$currentAuthId\" \n" +
                     "isShowHidedTodo \"$isCurrentUserAtHerselfPageOrAdmin\" | isAdmin \"$isCurrentUserAdmin\"")
-            adapter = ToDoAdapter(isCurrentUserAtHerselfPageOrAdmin){ uploadDataToFirebase() }
-
-            binding.rcView.adapter = adapter
-
-            adapter.setData(localData?.listTodo)
+            adapter.setPermission(isCurrentUserAtHerselfPageOrAdmin)
         }
         vModel.dataInFirebaseLiveData.observe(viewLifecycleOwner){
             if (it==null) return@observe checkInternetAccess()
@@ -125,10 +118,10 @@ class MainFragment : Fragment(){
             }
             binding.imageNoEthernet.visibility = View.GONE
 
-            if(localData==null)
+            if(vModel.getUserData()==null)
                 return@observe adapter.setData(it.listTodo)
 
-            if (localData == it) return@observe
+            if (vModel.getUserData() == it) return@observe
             if (adapter.getRawList() != it.listTodo) {
                 adapter.setData(it.listTodo)
             }
@@ -149,6 +142,7 @@ class MainFragment : Fragment(){
             targetShowingNick = it?.nickname.toString()
             activity?.title = it?.nickname
         }
+        vModel.coldLoad(targetShowingId)
     }
     private var mapOfNicknamesAndIds:MutableMap<String,String> = mutableMapOf()
     private fun openDialogToCreateNewTodo() {
@@ -219,8 +213,9 @@ class MainFragment : Fragment(){
     }
 
     private fun initVars(){
-
-        localData = vModel.getUserData()
+        adapter = ToDoAdapter(){ uploadDataToFirebase() }
+        binding.rcView.adapter = adapter
+        adapter.setData(vModel.getUserData()?.listTodo)
         currentAuthId = Firebase.auth.currentUser!!.uid
         targetShowingId = currentAuthId
 
@@ -232,20 +227,14 @@ class MainFragment : Fragment(){
             targetShowingNick = tempStr
             activity?.title = tempStr
             Log.i(TAG, "in popup menu was selected item \"$key\"")
-            vModel.loadTodo(key)
+            vModel.createToDoObserver(key)
             true
         }
     }
 
     private fun uploadDataToFirebase(){
         checkInternetAccess()
-        val data = adapter.getDatabaseData(userId = targetShowingId, nickname = targetShowingNick )
-        vModel.saveData(targetShowingId,data)
-    }
-
-    override fun onPause() {
-
-        super.onPause()
+        vModel.saveData(targetShowingId,adapter.getRawList())
     }
     
     private fun checkInternetAccess() {

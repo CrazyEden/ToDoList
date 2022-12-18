@@ -1,9 +1,6 @@
 <resources>
     <string name="app_name">ToDoList</string>
-    <string name="todo">Todo..</string>
-    <string name="export_id_title">export</string>
-    <string name="import_id_title">import</string>
-    <string name="reset_id_title">reset</string>
+
     <string name="google">google</string>
     <string name="anonymous">anonymous</string>
     <string name="notes">Заметки</string>
@@ -24,7 +21,6 @@
     <string name="password_reset">Воставновить пароль</string>
     <string name="email_sent">Сообрещние отправлено на почту</string>
     <string name="try_later">Попробуйте позже</string>
-    <string name="invalid_email_or_password">Неверная почта или пароль</string>
     <string name="not_all_fields_are_filled">Заполните все поля</string>
     <string name="password_is_too_short">Слишком короткий пароль</string>
     <string name="email_is_invalid">Неверная почта</string>
@@ -42,4 +38,7 @@
     <string name="text_a_new_nickname">Введите новый никнейм</string>
     <string name="password_hint_repeat">Повторите пароль</string>
     <string name="sign_out">Выйти</string>
+    <string name="sign_in_failed">Неверная почта или пароль</string>
+    <string name="passwords_dont_match">Пароли не совпадают</string>
+    <string name="unwnown_error">Не удалось связаться с сервером, попробуйте позже</string>
 </resources>

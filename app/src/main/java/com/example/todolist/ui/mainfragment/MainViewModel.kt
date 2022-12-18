@@ -4,9 +4,11 @@ import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 import com.example.todolist.data.model.Data
+import com.example.todolist.data.model.Todo
 import com.example.todolist.data.model.UserData
-import com.example.todolist.data.services.LocalDataService
+import com.example.todolist.data.repositories.LocalDataRepository
 import com.example.todolist.ui.activity.TAG
 import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.DatabaseError
@@ -14,11 +16,14 @@ import com.google.firebase.database.ValueEventListener
 import com.google.firebase.database.ktx.database
 import com.google.firebase.ktx.Firebase
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.tasks.await
 import javax.inject.Inject
 
 @HiltViewModel
 class MainViewModel @Inject constructor(
-    private val localDataService: LocalDataService
+    private val localDataRepository: LocalDataRepository
 ):ViewModel() {
 
     private val _adminIdLiveData = MutableLiveData<String?>()
@@ -30,14 +35,31 @@ class MainViewModel @Inject constructor(
 
     private var database = Firebase.database("https://todo-b94ed-default-rtdb.firebaseio.com")
 
+    fun coldLoad(id:String){
+        viewModelScope.launch(Dispatchers.IO) {
+            val adminId =
+                database.getReference("adminId").get().await().getValue(String::class.java)
+            val listOfUsers:List<UserData> =
+                database.getReference("data").get().await().children.map {
+                UserData(
+                    it.key,
+                    it.child("userData").child("nickname").getValue(String::class.java)
+                )
+            }.toList()
+            _adminIdLiveData.postValue(adminId)
+            _listCurrentUsers.postValue(listOfUsers)
+            createToDoObserver(id)
+        }
+    }
     private var obj2:ValueEventListener? = null
     private lateinit var pastId:String
-    fun loadTodo(id:String){
+    fun createToDoObserver(id:String){
         obj2?.let {
             Log.i(TAG,"data observer was removed for id \"$pastId\"")
             database.getReference("data").child(pastId).removeEventListener(it)
         }
         pastId = id
+        loadUserData(id)
         database.getReference("data").child(id).addValueEventListener(object : ValueEventListener {
             init { obj2 = this }
             override fun onDataChange(snapshot: DataSnapshot) {
@@ -51,30 +73,19 @@ class MainViewModel @Inject constructor(
             }
         })
     }
-    fun loadAdminId(id:String){
-        database.getReference("adminId").get().addOnCompleteListener {
-            if (!it.isSuccessful) return@addOnCompleteListener
-            val admId = it.result.getValue(String::class.java).toString()
-            _adminIdLiveData.postValue(admId)
-            loadTodo(id)
-            loadUserData(id)
-        }
-        database.getReference("data").get().addOnCompleteListener { task->
-            val b = task.result.children.map{
-                UserData(it.key,it.child("userData").child("nickname").getValue(String::class.java))
-            }.toList()//list of users with data
-            _listCurrentUsers.postValue(b)
-        }
-    }
+
     private val _userDataLiveData = MutableLiveData<UserData?>()
     val userDataLiveData : LiveData<UserData?> = _userDataLiveData
-    private fun loadUserData(id:String){
-        database.getReference("data").child(id).child("userData").get().addOnCompleteListener {
-            _userDataLiveData.postValue(it.result.getValue(UserData::class.java))
+    private fun loadUserData(id:String) {
+        viewModelScope.launch(Dispatchers.IO) {
+            val userdata = database.getReference("data").child(id)
+                .child("userData").get().await().getValue(UserData::class.java)
+            _userDataLiveData.postValue(userdata)
         }
     }
-    fun saveData(targetShowingId:String,dataForSave: Data){
-        database.getReference("data").child(targetShowingId)
+
+    fun saveData(targetShowingId:String,dataForSave: List<Todo>){
+        database.getReference("data").child(targetShowingId).child("listTodo")
             .setValue(dataForSave).addOnCompleteListener {
                 Log.i(TAG,"data was uploaded to firebase for id $targetShowingId")
             }
@@ -86,9 +97,9 @@ class MainViewModel @Inject constructor(
             }
     }
 
-    fun getUserData() = localDataService.getLocalToDoList()
+    fun getUserData() = localDataRepository.getLocalToDoList()
     fun saveUserData(json:String){
-        localDataService.setLocalToDoList(json)
+        localDataRepository.setLocalToDoList(json)
     }
 
     override fun onCleared() {

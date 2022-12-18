@@ -29,9 +29,9 @@ class SignUpByLoginFragment : Fragment() {
             val password = binding.editTextPassword.text.toString()
             val passwordSecond = binding.editTextPasswordSecond.text.toString()
             if (email.isEmpty() || password.isEmpty() || passwordSecond.isEmpty()) return@setOnClickListener showLongToast("Заполните все поля")
-            if (!email.isEmailValid()) return@setOnClickListener showLongToast("Неверный логин")
-            if (password.length < 6) return@setOnClickListener showLongToast("Слишком короткий пароль")
-            if (password != passwordSecond) return@setOnClickListener showLongToast("Пароли не совпадают")
+            if (!email.isEmailValid()) return@setOnClickListener showLongToast(getString(R.string.email_is_invalid))
+            if (password.length < 6) return@setOnClickListener showLongToast(getString(R.string.password_is_too_short))
+            if (password != passwordSecond) return@setOnClickListener showLongToast(getString(R.string.passwords_dont_match))
             auth.createUserWithEmailAndPassword(email, password).addOnCompleteListener {
                 if (it.isSuccessful) {
                     parentFragmentManager.beginTransaction()

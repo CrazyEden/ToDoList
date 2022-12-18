@@ -3,36 +3,36 @@ package com.example.todolist.ui.activity
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
-import com.example.todolist.data.services.LocalDataService
+import com.example.todolist.data.repositories.LocalDataRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
 
 @HiltViewModel
 class ActivityViewModel @Inject constructor(
-    private val localDataService: LocalDataService
+    private val localDataRepository: LocalDataRepository
 ):ViewModel() {
     private val _backgroundColorLiveData = MutableLiveData<Int>()
     val backgroundColorLiveData : LiveData<Int> = _backgroundColorLiveData
     fun setBackgroundColor(color:Int){
-        localDataService.setBackgroundColor(color)
+        localDataRepository.setBackgroundColor(color)
         _backgroundColorLiveData.postValue(color)
     }
-    fun getBackgroundColor() = localDataService.getBackgroundColor()
+    fun getBackgroundColor() = localDataRepository.getBackgroundColor()
 
     private val _toolbarColorLiveData = MutableLiveData<Int>()
     var toolbarColorLiveData : LiveData<Int> = _toolbarColorLiveData
     fun setToolbarBackgroundColor(color:Int){
-        localDataService.setToolbarColor(color)
+        localDataRepository.setToolbarColor(color)
         _toolbarColorLiveData.postValue(color)
     }
-    fun getToolbarColor() = localDataService.getToolbarColor()
+    fun getToolbarColor() = localDataRepository.getToolbarColor()
 
     private val _windowColorLiveData = MutableLiveData<Int>()
     val windowColorLiveData : LiveData<Int> = _windowColorLiveData
     fun setWindowColor(color:Int){
-        localDataService.setWindowColor(color)
+        localDataRepository.setWindowColor(color)
         _windowColorLiveData.postValue(color)
     }
-    fun getWindowColor() = localDataService.getWindowColor()
+    fun getWindowColor() = localDataRepository.getWindowColor()
 
 }

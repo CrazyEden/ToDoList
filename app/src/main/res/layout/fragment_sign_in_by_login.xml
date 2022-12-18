@@ -31,4 +31,10 @@
         android:text="@string/sign_in"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"/>
+    <androidx.appcompat.widget.AppCompatButton
+        android:id="@+id/buttonResetPassword"
+        android:layout_gravity="center"
+        android:text="@string/password_reset"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"/>
 </LinearLayout>

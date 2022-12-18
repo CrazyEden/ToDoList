@@ -28,9 +28,9 @@ class SignInByLoginFragment : Fragment() {
         binding.buttonDone.setOnClickListener {
             val email = binding.editTextEmail.text.toString()
             val password = binding.editTextPassword.text.toString()
-            if (email.isEmpty() || password.isEmpty()) return@setOnClickListener showLongToast("Заполните все поля")
-            if (!email.isEmailValid()) return@setOnClickListener showLongToast("Неверный логин")
-            if (password.length < 6) return@setOnClickListener showLongToast("Слишком короткий пароль")
+            if (email.isEmpty() || password.isEmpty()) return@setOnClickListener showLongToast(getString(R.string.not_all_fields_are_filled))
+            if (!email.isEmailValid()) return@setOnClickListener showLongToast(getString(R.string.email_is_invalid))
+            if (password.length < 6) return@setOnClickListener showLongToast(getString(R.string.password_is_too_short))
 
             auth.signInWithEmailAndPassword(email, password).addOnCompleteListener {
                 if (it.isSuccessful) {
@@ -39,14 +39,21 @@ class SignInByLoginFragment : Fragment() {
                         .commit()
                     return@addOnCompleteListener
                 }
-                showLongToast(
-                    when(it.exception?.message){
-                        "The email address is already in use by another account." -> getString(R.string.the_email_is_already_registered)
-                        else -> getString(R.string.register_is_failed_try_again_later)
-                    })
-                Log.wtf(TAG, "registerByPassword: ",it.exception)
+                showLongToast(getString(R.string.sign_in_failed))
+                Log.i(TAG, "registerByPassword: ",it.exception)
             }
 
+        }
+        binding.buttonResetPassword.setOnClickListener {
+            val email = binding.editTextEmail.text.toString()
+            if (!email.isEmailValid()) return@setOnClickListener showLongToast(getString(R.string.email_is_invalid))
+            auth.sendPasswordResetEmail(email).addOnCompleteListener {
+                if (it.isSuccessful)
+                    return@addOnCompleteListener showLongToast(getString(R.string.email_sent))
+
+                Log.wtf(TAG, "onCreateView: ", it.exception)
+                showLongToast(getString(R.string.unwnown_error))
+            }
         }
         return binding.root
     }

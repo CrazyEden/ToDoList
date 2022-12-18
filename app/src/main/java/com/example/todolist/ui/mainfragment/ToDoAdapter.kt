@@ -21,8 +21,7 @@ import com.google.gson.Gson
 
 typealias ListWasUpdated = (list:MutableList<Todo>) -> Unit
 
-class ToDoAdapter(private var isShowSecretTodo:Boolean = false,
-                          private val listWasUpdated: ListWasUpdated):RecyclerView.Adapter<ToDoAdapter.ToDoViewHolder>() {
+class ToDoAdapter(private val listWasUpdated: ListWasUpdated):RecyclerView.Adapter<ToDoAdapter.ToDoViewHolder>() {
     class ToDoViewHolder(val binding:ItemTodoBinding):RecyclerView.ViewHolder(binding.root)
 
     private var listToDo = mutableListOf<Todo>()
@@ -35,6 +34,11 @@ class ToDoAdapter(private var isShowSecretTodo:Boolean = false,
     fun addData(item: Todo){
         listToDo.add(0,item)
         notifyItemInserted(0)
+    }
+
+    private var isShowSecretTodo:Boolean = false
+    fun setPermission(isShowSecretTodo:Boolean) {
+        this.isShowSecretTodo = isShowSecretTodo
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ToDoViewHolder {
@@ -135,12 +139,6 @@ class ToDoAdapter(private var isShowSecretTodo:Boolean = false,
     override fun getItemCount(): Int = listToDo.size
 
     fun toJson(userId:String): String = Gson().toJson(Data(listToDo, UserData(userId)))
-
-    fun getDatabaseData(userId:String,nickname:String) =
-        Data(
-            listTodo =listToDo,
-            UserData(userId,nickname)
-        )
 
     fun getRawList() = listToDo
 }
