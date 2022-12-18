@@ -12,18 +12,20 @@ import com.example.todolist.R
 import com.example.todolist.databinding.FragmentSignInByLoginBinding
 import com.example.todolist.ui.activity.TAG
 import com.example.todolist.ui.mainfragment.MainFragment
-import com.google.firebase.auth.ktx.auth
-import com.google.firebase.ktx.Firebase
+import com.google.firebase.auth.FirebaseAuth
+import dagger.hilt.android.AndroidEntryPoint
+import javax.inject.Inject
 
-
+@AndroidEntryPoint
 class SignInByLoginFragment : Fragment() {
     lateinit var binding:FragmentSignInByLoginBinding
+    @Inject lateinit var auth: FirebaseAuth
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?,
     ): View {
-        val auth = Firebase.auth
+
         binding = FragmentSignInByLoginBinding.inflate(inflater, container, false)
         binding.buttonDone.setOnClickListener {
             val email = binding.editTextEmail.text.toString()

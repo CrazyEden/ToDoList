@@ -12,9 +12,8 @@ import com.example.todolist.data.repositories.LocalDataRepository
 import com.example.todolist.ui.activity.TAG
 import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.DatabaseError
+import com.google.firebase.database.FirebaseDatabase
 import com.google.firebase.database.ValueEventListener
-import com.google.firebase.database.ktx.database
-import com.google.firebase.ktx.Firebase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -23,7 +22,8 @@ import javax.inject.Inject
 
 @HiltViewModel
 class MainViewModel @Inject constructor(
-    private val localDataRepository: LocalDataRepository
+    private val localDataRepository: LocalDataRepository,
+    private val database:FirebaseDatabase
 ):ViewModel() {
 
     private val _adminIdLiveData = MutableLiveData<String?>()
@@ -32,8 +32,6 @@ class MainViewModel @Inject constructor(
     val dataInFirebaseLiveData: LiveData<Data?> = _dataInFirebaseLiveData
     private val _listCurrentUsers = MutableLiveData<List<UserData?>>()
     val listCurrentUsers: LiveData<List<UserData?>> = _listCurrentUsers
-
-    private var database = Firebase.database("https://todo-b94ed-default-rtdb.firebaseio.com")
 
     fun coldLoad(id:String){
         viewModelScope.launch(Dispatchers.IO) {

@@ -18,28 +18,27 @@ import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.android.gms.auth.api.signin.GoogleSignInClient
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions
 import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.auth.FirebaseUser
 import com.google.firebase.auth.GoogleAuthProvider
-import com.google.firebase.auth.ktx.auth
-import com.google.firebase.ktx.Firebase
+import com.google.firebase.database.FirebaseDatabase
+import dagger.hilt.android.AndroidEntryPoint
+import javax.inject.Inject
 
-
+@AndroidEntryPoint
 class SignInFragment : Fragment() {
     private lateinit var binding:FragmentSignInBinding
-    private lateinit var auth: FirebaseAuth
-    private var currentUser: FirebaseUser? = null
-    private lateinit var launcher: ActivityResultLauncher<Intent>
 
+    @Inject lateinit var auth: FirebaseAuth
+    @Inject lateinit var database: FirebaseDatabase
+
+
+    private lateinit var launcher: ActivityResultLauncher<Intent>
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
         binding = FragmentSignInBinding.inflate(inflater,container,false)
 
-        auth = Firebase.auth
-        currentUser = auth.currentUser
-
-        if (currentUser!=null) {
+        if (auth.currentUser!=null) {
             openFragment()
             return binding.root
         }
@@ -52,11 +51,9 @@ class SignInFragment : Fragment() {
             } else Log.wtf("xdd", "sign in is canceled")
         }
         binding.buttonGoogleSignIn.apply {
-            visibility = View.VISIBLE
             setOnClickListener { singInGoogle() }
         }
         binding.buttonEmailAndPasswordSignIn.apply {
-            visibility = View.VISIBLE
             setOnClickListener { singInByPassword2() }
         }
         return binding.root
@@ -87,7 +84,11 @@ class SignInFragment : Fragment() {
         val cred = GoogleAuthProvider.getCredential(token,null)
         auth.signInWithCredential(cred).addOnCompleteListener {
             if (it.isSuccessful) {
-                openFragment()
+                database.getReference("data").child(auth.currentUser!!.uid).child("userData")
+                    .child("nickname").setValue(auth.currentUser?.displayName)
+                    .addOnSuccessListener {
+                        openFragment()
+                    }
                 Log.d(TAG, "done!")
             }
             else Log.d(TAG, "no done!")
