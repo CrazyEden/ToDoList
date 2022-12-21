@@ -8,6 +8,7 @@ import androidx.lifecycle.viewModelScope
 import com.example.todolist.data.model.Data
 import com.example.todolist.data.model.Todo
 import com.example.todolist.data.model.UserData
+import com.example.todolist.data.repositories.FirebaseRepository
 import com.example.todolist.data.repositories.LocalDataRepository
 import com.example.todolist.ui.activity.TAG
 import com.google.firebase.database.DataSnapshot
@@ -17,13 +18,13 @@ import com.google.firebase.database.ValueEventListener
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.tasks.await
 import javax.inject.Inject
 
 @HiltViewModel
 class MainViewModel @Inject constructor(
     private val localDataRepository: LocalDataRepository,
-    private val database:FirebaseDatabase
+    private val database:FirebaseDatabase,
+    private val firebaseRepository: FirebaseRepository
 ):ViewModel() {
 
     private val _adminIdLiveData = MutableLiveData<String?>()
@@ -35,17 +36,8 @@ class MainViewModel @Inject constructor(
 
     fun coldLoad(id:String){
         viewModelScope.launch(Dispatchers.IO) {
-            val adminId =
-                database.getReference("adminId").get().await().getValue(String::class.java)
-            val listOfUsers:List<UserData> =
-                database.getReference("data").get().await().children.map {
-                UserData(
-                    it.key,
-                    it.child("userData").child("nickname").getValue(String::class.java)
-                )
-            }.toList()
-            _adminIdLiveData.postValue(adminId)
-            _listCurrentUsers.postValue(listOfUsers)
+            _adminIdLiveData.postValue(firebaseRepository.getAdminId())
+            _listCurrentUsers.postValue(firebaseRepository.getListUsers())
             createToDoObserver(id)
         }
     }
@@ -61,13 +53,11 @@ class MainViewModel @Inject constructor(
         database.getReference("data").child(id).addValueEventListener(object : ValueEventListener {
             init { obj2 = this }
             override fun onDataChange(snapshot: DataSnapshot) {
-
-                val data = snapshot.getValue(Data::class.java)
-                _dataInFirebaseLiveData.postValue(data)
+                _dataInFirebaseLiveData.postValue(snapshot.getValue(Data::class.java))
             }
             override fun onCancelled(error: DatabaseError) {
                 Log.w(TAG,"get data by id is Cancelled")
-                _dataInFirebaseLiveData.postValue(null)
+                _dataInFirebaseLiveData.postValue(localDataRepository.getLocalToDoList())
             }
         })
     }
@@ -76,26 +66,14 @@ class MainViewModel @Inject constructor(
     val userDataLiveData : LiveData<UserData?> = _userDataLiveData
     private fun loadUserData(id:String) {
         viewModelScope.launch(Dispatchers.IO) {
-            val userdata = database.getReference("data").child(id)
-                .child("userData").get().await().getValue(UserData::class.java)
-            _userDataLiveData.postValue(userdata)
+            _userDataLiveData.postValue(firebaseRepository.getUserData(id))
         }
     }
 
     fun saveData(targetShowingId:String,dataForSave: List<Todo>){
-        database.getReference("data").child(targetShowingId).child("listTodo")
-            .setValue(dataForSave).addOnCompleteListener {
-                Log.i(TAG,"data was uploaded to firebase for id $targetShowingId")
-            }
-    }
-    fun updateNickName(nickname: String,targetShowingId:String){
-        database.getReference("data").child(targetShowingId).child("userData").child("nickname")
-            .setValue(nickname).addOnCompleteListener {
-                Log.i(TAG,"nickname was uploaded to firebase for id $targetShowingId")
-            }
+        firebaseRepository.uploadToDoList(targetShowingId, dataForSave)
     }
 
-    fun getUserData() = localDataRepository.getLocalToDoList()
     fun saveUserData(json:String){
         localDataRepository.setLocalToDoList(json)
     }

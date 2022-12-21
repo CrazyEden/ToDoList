@@ -30,18 +30,12 @@ class SignInFragment : Fragment() {
     @Inject lateinit var auth: FirebaseAuth
     @Inject lateinit var database: FirebaseDatabase
 
-
     private lateinit var launcher: ActivityResultLauncher<Intent>
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
         binding = FragmentSignInBinding.inflate(inflater,container,false)
-
-        if (auth.currentUser!=null) {
-            openFragment()
-            return binding.root
-        }
 
         launcher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {
             val task = GoogleSignIn.getSignedInAccountFromIntent(it.data)
@@ -54,12 +48,12 @@ class SignInFragment : Fragment() {
             setOnClickListener { singInGoogle() }
         }
         binding.buttonEmailAndPasswordSignIn.apply {
-            setOnClickListener { singInByPassword2() }
+            setOnClickListener { singInByPassword() }
         }
         return binding.root
     }
 
-    private fun singInByPassword2() {
+    private fun singInByPassword() {
         parentFragmentManager.beginTransaction()
             .addToBackStack(null)
             .replace(R.id.container, LogInFragment())

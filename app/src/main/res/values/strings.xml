@@ -1,8 +1,8 @@
 <resources>
     <string name="app_name">ToDoList</string>
 
-    <string name="google">google</string>
-    <string name="anonymous">anonymous</string>
+    <string name="google">Google</string>
+    <string name="Email">Email</string>
     <string name="notes">Заметки</string>
     <string name="sub_todo">Добавить ToDo</string>
     <string name="is_todo_secret">ToDo секретная</string>
@@ -41,4 +41,9 @@
     <string name="sign_in_failed">Неверная почта или пароль</string>
     <string name="passwords_dont_match">Пароли не совпадают</string>
     <string name="unwnown_error">Не удалось связаться с сервером, попробуйте позже</string>
+    <string name="hello_blank_fragment">Hello blank fragment</string>
+    <string name="title_note_hint">Название заметки</string>
+    <string name="profile_menu">Профиль</string>
+    <string name="todo_list_menu">Список ToDo</string>
+    <string name="no_ethernet">Нет интернета</string>
 </resources>

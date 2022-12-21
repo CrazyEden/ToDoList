@@ -2,7 +2,6 @@ package com.example.todolist.ui.mainfragment
 
 import android.app.ActionBar.LayoutParams
 import android.graphics.Color
-import android.text.InputType
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
@@ -102,27 +101,27 @@ class ToDoAdapter(private val listWasUpdated: ListWasUpdated):RecyclerView.Adapt
             true
         }
 
-        holder.binding.notes.apply {
-            if (isShowSecretTodo) visibility = View.VISIBLE
-            else {
-                visibility = View.GONE
-                return@apply
-            }
-            setText(item.notes)
-            setRawInputType(InputType.TYPE_CLASS_TEXT)
-            setOnEditorActionListener { view, actionId, _ ->
-                if (actionId == EditorInfo.IME_ACTION_DONE) {
-                    view.clearFocus()
-                    val str = view.text.toString()
-                    if (str == listToDo[position].notes) return@setOnEditorActionListener true
-                    listToDo[position].notes = str
-                    Log.i(TAG, "list was updated. cause : edit note")
-                    listWasUpdated(listToDo)
-                    return@setOnEditorActionListener false
-                }
-                false
-            }
-        }
+//        holder.binding.notes.apply {
+//            if (isShowSecretTodo) visibility = View.VISIBLE
+//            else {
+//                visibility = View.GONE
+//                return@apply
+//            }
+//            setText(item.notes)
+//            setRawInputType(InputType.TYPE_CLASS_TEXT)
+//            setOnEditorActionListener { view, actionId, _ ->
+//                if (actionId == EditorInfo.IME_ACTION_DONE) {
+//                    view.clearFocus()
+//                    val str = view.text.toString()
+//                    if (str == listToDo[position].notes) return@setOnEditorActionListener true
+//                    listToDo[position].notes = str
+//                    Log.i(TAG, "list was updated. cause : edit note")
+//                    listWasUpdated(listToDo)
+//                    return@setOnEditorActionListener false
+//                }
+//                false
+//            }
+//        }
         holder.binding.deadline.apply {
             text = item.deadlineString
             val timeLeftBeforeDeadline = item.deadlineLong - MainFragment.getCurrentTime()
@@ -141,7 +140,7 @@ class ToDoAdapter(private val listWasUpdated: ListWasUpdated):RecyclerView.Adapt
     }
     override fun getItemCount(): Int = listToDo.size
 
-    fun toJson(userId:String): String = Gson().toJson(Data(listToDo, UserData(userId)))
+    fun toJson(userId:String): String = Gson().toJson(Data(listToDo,null, UserData(userId)))
 
     fun getRawList() = listToDo
 }

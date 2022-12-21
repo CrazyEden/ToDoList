@@ -18,7 +18,7 @@ class LogInFragment : Fragment() {
         savedInstanceState: Bundle?,
     ): View {
         binding = FragmentLogInBinding.inflate(inflater,container,false)
-        binding.viewPager.adapter = LogInViewPagerAdapter(parentFragmentManager,lifecycle)
+        binding.viewPager.adapter = LogInViewPagerAdapter(childFragmentManager,lifecycle)
         binding.viewPager.registerOnPageChangeCallback(object : ViewPager2.OnPageChangeCallback() {
             override fun onPageSelected(position: Int) {
                 binding.topNavMenu.menu.getItem(position).isChecked = true

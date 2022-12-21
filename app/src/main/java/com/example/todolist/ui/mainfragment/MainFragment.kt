@@ -10,18 +10,14 @@ import android.os.Bundle
 import android.util.Log
 import android.view.*
 import android.widget.PopupMenu
-import android.widget.Toast
 import androidx.core.view.MenuProvider
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.Lifecycle
 import com.example.todolist.R
 import com.example.todolist.data.model.Todo
-import com.example.todolist.databinding.DialogChangeNicknameBinding
 import com.example.todolist.databinding.DialogCreateNewTodoBinding
 import com.example.todolist.databinding.FragmentMainBinding
-import com.example.todolist.ui.SettingsFragment
-import com.example.todolist.ui.SignInFragment
 import com.example.todolist.ui.activity.TAG
 import com.google.firebase.auth.ktx.auth
 import com.google.firebase.ktx.Firebase
@@ -64,36 +60,11 @@ class MainFragment : Fragment(){
                 menuInflater.inflate(R.menu.main_menu, menu)
 
             override fun onMenuItemSelected(menuItem: MenuItem): Boolean {
-                return when (menuItem.itemId) {
-                    R.id.showListUsers -> {
-                        runCatching { popupMenu.show() }
-                            .getOrElse {
-                                Log.e(TAG,"popupmenu isn't inflated")
-                                Toast.makeText(requireContext(),getString(R.string.error_load_user_list),Toast.LENGTH_LONG).show()
-                            }
-                        true
-                    }
-                    R.id.settings -> {
-                        parentFragmentManager.beginTransaction()
-                            .addToBackStack(null)
-                            .replace(R.id.container,SettingsFragment())
-                            .commit()
-                        true
-                    }
-                    R.id.changeNickname ->{
-                        openDialogToChangeNickName(activity?.title as String? ?:"")
-                        true
-                    }
-                    R.id.sign_out ->{
-                        Firebase.auth.signOut()
-                        parentFragmentManager.beginTransaction()
-                            .replace(R.id.container,SignInFragment())
-                            .commit()
-                        true
-                    }
-
-                    else -> false
+                if (menuItem.itemId == R.id.showListUsers){
+                    popupMenu.show()
+                    return true
                 }
+                return false
             }
         }
         requireActivity().addMenuProvider(menuProvider,viewLifecycleOwner,Lifecycle.State.RESUMED)
@@ -120,13 +91,13 @@ class MainFragment : Fragment(){
             }
             binding.imageNoEthernet.visibility = View.GONE
 
-            if(vModel.getUserData()==null)
+            if(adapter.getRawList().isEmpty())
                 return@observe adapter.setData(it.listTodo)
 
-            if (vModel.getUserData() == it) return@observe
-            if (adapter.getRawList() != it.listTodo) {
-                adapter.setData(it.listTodo)
-            }
+            if (adapter.getRawList() == it.listTodo) return@observe
+
+            adapter.setData(it.listTodo)
+
 
         }
         vModel.listCurrentUsers.observe(viewLifecycleOwner){ it ->
@@ -195,29 +166,11 @@ class MainFragment : Fragment(){
         },0,0,true).show()
     }
 
-    private fun openDialogToChangeNickName(oldNick:String?){
-        val dialogChangeNicknameBinding = DialogChangeNicknameBinding.inflate(layoutInflater)
-        dialogChangeNicknameBinding.nicknameEditTextView.setText(oldNick)
-        AlertDialog.Builder(context)
-            .setView(dialogChangeNicknameBinding.root)
-            .setPositiveButton(R.string.apply) { _, _ ->
-                val newNickname = dialogChangeNicknameBinding.nicknameEditTextView.text.toString()
-                if (newNickname.isNotEmpty()) {
-                    activity?.title = newNickname
-                    vModel.updateNickName(nickname = newNickname, targetShowingId = targetShowingId)
-                }
-            }
-            .setNegativeButton(getString(R.string.cancel)){ dialog, _ ->
-                dialog.dismiss()
-            }
-            .setTitle(R.string.change_nickname)
-            .show()
-    }
+
 
     private fun initVars(){
         adapter = ToDoAdapter(){ uploadDataToFirebase() }
         binding.rcView.adapter = adapter
-        adapter.setData(vModel.getUserData()?.listTodo)
         currentAuthId = Firebase.auth.currentUser!!.uid
         targetShowingId = currentAuthId
 

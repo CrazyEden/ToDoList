@@ -4,12 +4,14 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import com.example.todolist.data.repositories.LocalDataRepository
+import com.google.firebase.auth.FirebaseAuth
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
 
 @HiltViewModel
 class ActivityViewModel @Inject constructor(
-    private val localDataRepository: LocalDataRepository
+    private val localDataRepository: LocalDataRepository,
+    private val auth: FirebaseAuth
 ):ViewModel() {
     private val _backgroundColorLiveData = MutableLiveData<Int>()
     val backgroundColorLiveData : LiveData<Int> = _backgroundColorLiveData
@@ -35,4 +37,5 @@ class ActivityViewModel @Inject constructor(
     }
     fun getWindowColor() = localDataRepository.getWindowColor()
 
+    fun isCurrentUserNull() = auth.currentUser == null
 }
