@@ -4,6 +4,9 @@
     <entry_points version="2.0">
       <entry_point TYPE="field" FQNAME="com.example.todolist.ui.mainfragment.MainFragment adapter" />
     </entry_points>
+    <list size="1">
+      <item index="0" class="java.lang.String" itemvalue="dagger.Binds" />
+    </list>
   </component>
   <component name="ExternalStorageConfigurationManager" enabled="true" />
   <component name="ProjectRootManager" version="2" languageLevel="JDK_11" default="true" project-jdk-name="Android Studio default JDK" project-jdk-type="JavaSDK">

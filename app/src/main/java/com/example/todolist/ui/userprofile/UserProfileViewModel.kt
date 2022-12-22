@@ -17,7 +17,7 @@ class UserProfileViewModel @Inject constructor(
 ) : ViewModel(){
 
     fun updateNickname(nickname:String){
-        firebaseRepository.updateAuthUserNickname(nickname)
+        firebaseRepository.updateCurrentUserNickname(nickname)
     }
     fun signOut() = firebaseRepository.signOut()
 

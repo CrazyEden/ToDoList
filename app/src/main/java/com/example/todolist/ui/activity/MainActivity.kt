@@ -75,7 +75,7 @@ class MainActivity : AppCompatActivity(){
             supportActionBar?.setBackgroundDrawable(ColorDrawable(it))
         }
         vModel.backgroundColorLiveData.observe(this){
-            binding.container.setBackgroundColor(it)
+            binding.root.setBackgroundColor(it)
         }
         vModel.windowColorLiveData.observe(this){
             window.setBackgroundDrawable(ColorDrawable(it))
