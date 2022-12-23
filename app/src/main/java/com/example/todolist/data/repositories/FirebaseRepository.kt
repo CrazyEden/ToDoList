@@ -16,4 +16,6 @@ interface FirebaseRepository {
     fun uploadNotes(list:List<Note>)
     suspend fun getAdminId(): String?
     suspend fun getListUsers():List<UserData>
+    fun createToDoObserver(id:String, dataObserver:DataObserver)
+    fun destroyToDoListener()
 }

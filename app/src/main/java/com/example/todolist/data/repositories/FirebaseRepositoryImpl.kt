@@ -1,13 +1,21 @@
 package com.example.todolist.data.repositories
 
+import android.util.Log
 import com.example.todolist.data.model.Data
 import com.example.todolist.data.model.Note
 import com.example.todolist.data.model.Todo
 import com.example.todolist.data.model.UserData
+import com.example.todolist.ui.activity.TAG
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.database.DataSnapshot
+import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.FirebaseDatabase
+import com.google.firebase.database.ValueEventListener
+import com.google.gson.Gson
 import kotlinx.coroutines.tasks.await
 import javax.inject.Inject
+
+typealias DataObserver = (data:Data?) -> Unit
 
 class FirebaseRepositoryImpl @Inject constructor(
     private val auth: FirebaseAuth,
@@ -47,5 +55,38 @@ class FirebaseRepositoryImpl @Inject constructor(
                 it.key,
                 it.child("userData").child("nickname").getValue(String::class.java)
             )
-        }.toList()
+        }
+
+    private var obj2: ValueEventListener? = null
+    private var pastId: String? = null
+    override fun createToDoObserver(id:String, dataObserver:DataObserver){
+        if (obj2 != null && pastId != null){
+            database.getReference("data").child(pastId!!).removeEventListener(obj2!!)
+            Log.i(TAG,"data observer was removed for id \"$pastId\"")
+        }
+        pastId = id
+
+        database.getReference("data").child(id).addValueEventListener(object : ValueEventListener {
+            init { obj2 = this }
+            override fun onDataChange(snapshot: DataSnapshot) {
+                val data = snapshot.getValue(Data::class.java)
+                dataObserver(data)
+                if(data?.userData?.userId == getAuthUserUid()){
+                    val json = Gson().toJson(data)
+                    localDataRepository.setLocalToDoList(json)
+                }
+            }
+            override fun onCancelled(error: DatabaseError) {
+            }
+        })
+    }
+     override fun destroyToDoListener(){
+         if (obj2 != null && pastId != null){
+             Log.i(TAG,"data observer was removed for id \"$pastId\"")
+             database.getReference("data").child(pastId!!).removeEventListener(obj2!!)
+         }
+     }
+
+
+
 }

@@ -3,9 +3,6 @@ package com.example.todolist.ui.mainfragment
 import android.app.AlertDialog
 import android.app.DatePickerDialog
 import android.app.TimePickerDialog
-import android.content.Context
-import android.net.ConnectivityManager
-import android.net.NetworkCapabilities
 import android.os.Bundle
 import android.util.Log
 import android.view.*
@@ -19,8 +16,6 @@ import com.example.todolist.data.model.Todo
 import com.example.todolist.databinding.DialogCreateNewTodoBinding
 import com.example.todolist.databinding.FragmentMainBinding
 import com.example.todolist.ui.activity.TAG
-import com.google.firebase.auth.ktx.auth
-import com.google.firebase.ktx.Firebase
 import dagger.hilt.android.AndroidEntryPoint
 import java.text.SimpleDateFormat
 import java.util.*
@@ -32,7 +27,6 @@ class MainFragment : Fragment(){
     private lateinit var adapter: ToDoAdapter
     private lateinit var targetShowingId:String
     private lateinit var targetShowingNick:String
-    private lateinit var currentAuthId:String
     private lateinit var popupMenu:PopupMenu
     private val vModel: MainViewModel by viewModels()
     private var isCurrentUserAdmin = false
@@ -71,34 +65,21 @@ class MainFragment : Fragment(){
     }
 
     private fun initViewModelObservers() {
-        checkInternetAccess()
-        vModel.adminIdLiveData.observe(viewLifecycleOwner){
-            if (it==null) return@observe checkInternetAccess()
 
-            binding.imageNoEthernet.visibility = View.GONE
-            isCurrentUserAdmin =  currentAuthId == it
-            Log.i(TAG,"adminIdLiveData observe string \"$it\" | your id \"$currentAuthId\" \n" +
+        vModel.adminIdLiveData.observe(viewLifecycleOwner){
+            if (it==null) return@observe
+
+            isCurrentUserAdmin =  vModel.authId == it
+            Log.i(TAG,"adminIdLiveData observe string \"$it\" | your id \"${vModel.authId}\" \n" +
                     "isShowHidedTodo \"$isCurrentUserAtHerselfPageOrAdmin\" | isAdmin \"$isCurrentUserAdmin\"")
         }
         vModel.dataInFirebaseLiveData.observe(viewLifecycleOwner){
-            isCurrentUserAtHerselfPageOrAdmin = (isCurrentUserAdmin || (currentAuthId == targetShowingId))
-            Log.w(TAG, "initViewModelObservers: $isCurrentUserAtHerselfPageOrAdmin")
+            val list = it?.listTodo
+            isCurrentUserAtHerselfPageOrAdmin = (isCurrentUserAdmin || (vModel.authId == targetShowingId))
             adapter.setPermission(isCurrentUserAtHerselfPageOrAdmin)
 
-            if (it==null) return@observe checkInternetAccess()
-            if (it.userData?.userId == currentAuthId){
-                vModel.saveUserData(adapter.toJson(currentAuthId))
-            }
-            binding.imageNoEthernet.visibility = View.GONE
-
-            if(adapter.getRawList().isEmpty())
-                return@observe adapter.setData(it.listTodo)
-
-            if (adapter.getRawList() == it.listTodo) return@observe
-
-            adapter.setData(it.listTodo)
-
-
+            if (adapter.getRawList() != list)
+                adapter.setData(list)
         }
         vModel.listCurrentUsers.observe(viewLifecycleOwner){ it ->
             if (it.isEmpty()) return@observe
@@ -143,9 +124,7 @@ class MainFragment : Fragment(){
                 ))
                 uploadDataToFirebase()
             }
-            .setNegativeButton(getString(R.string.cancel)){ dialog, _ ->
-                dialog.dismiss()
-            }
+            .setNegativeButton(getString(R.string.cancel)){ _, _ -> }
             .setTitle(R.string.create_new_todo)
             .show()
     }
@@ -171,8 +150,7 @@ class MainFragment : Fragment(){
     private fun initVars(){
         adapter = ToDoAdapter(){ uploadDataToFirebase() }
         binding.rcView.adapter = adapter
-        currentAuthId = Firebase.auth.currentUser!!.uid
-        targetShowingId = currentAuthId
+        targetShowingId = vModel.authId
 
         popupMenu = PopupMenu(context,binding.buttonAddTodo)
         popupMenu.setOnMenuItemClickListener {
@@ -188,25 +166,8 @@ class MainFragment : Fragment(){
     }
 
     private fun uploadDataToFirebase(){
-        checkInternetAccess()
         vModel.saveData(targetShowingId,adapter.getRawList())
     }
-    
-    private fun checkInternetAccess() {
-        // register activity with the connectivity manager service
-        val connectivityManager = context?.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
-
-        // Returns a Network object corresponding to
-        // the currently active default data network.
-        val network = connectivityManager.activeNetwork ?: return showEthernetErrorIcon()
-        // Representation of the capabilities of an active network.
-        val activeNetwork = connectivityManager.getNetworkCapabilities(network) ?:return showEthernetErrorIcon()
-        if (activeNetwork.hasTransport(NetworkCapabilities.TRANSPORT_WIFI) ||
-            activeNetwork.hasTransport(NetworkCapabilities.TRANSPORT_CELLULAR))
-            binding.imageNoEthernet.visibility = View.GONE
-        else showEthernetErrorIcon()
-    }
-    private fun showEthernetErrorIcon(){ binding.imageNoEthernet.visibility = View.VISIBLE }
 
     companion object{
         fun getCurrentTime() = Calendar.getInstance().time.time

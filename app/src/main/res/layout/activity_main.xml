@@ -7,12 +7,25 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     tools:context=".ui.activity.MainActivity">
-    <androidx.fragment.app.FragmentContainerView
+    <FrameLayout
         android:layout_width="match_parent"
         android:layout_height="0dp"
-        android:layout_weight="1"
-        android:id="@+id/container"
-        tools:layout="@layout/fragment_sign_in"/>
+        android:layout_weight="1">
+        <androidx.fragment.app.FragmentContainerView
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:id="@+id/container"
+            tools:layout="@layout/fragment_sign_in" />
+        <ImageView
+            android:id="@+id/imageNoEthernet"
+            android:contentDescription="@string/no_ethernet"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="bottom|center_horizontal"
+            android:layout_marginBottom="50dp"
+            app:srcCompat="@drawable/ic_no_ethernet" />
+    </FrameLayout>
+
     <com.google.android.material.bottomnavigation.BottomNavigationView
         android:id="@+id/bottomNavMenu"
         android:background="@color/cardview_shadow_start_color"

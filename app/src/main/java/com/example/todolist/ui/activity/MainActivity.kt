@@ -8,6 +8,7 @@ import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentManager
+import com.example.todolist.NetworkChangeReceiver
 import com.example.todolist.R
 import com.example.todolist.databinding.ActivityMainBinding
 import com.example.todolist.ui.SignInFragment
@@ -32,6 +33,7 @@ class MainActivity : AppCompatActivity(){
         initSafetyNet()
         iniAppColors()
         registerFragmentLifecycleListener()
+        registerEthernetAccessListener()
         binding.bottomNavMenu.setOnItemSelectedListener {
             when(it.itemId){
                 R.id.listTodo_menu->{ openFragment(MainFragment()) }
@@ -40,10 +42,13 @@ class MainActivity : AppCompatActivity(){
             }
             true
         }
-
         if(savedInstanceState != null) return
         if (vModel.isCurrentUserNull()) openFragment(SignInFragment())
         else openFragment(MainFragment())
+    }
+
+    private fun registerEthernetAccessListener() {
+        NetworkChangeReceiver(this,binding.imageNoEthernet)
     }
 
     private fun registerFragmentLifecycleListener() {
@@ -89,7 +94,6 @@ class MainActivity : AppCompatActivity(){
             SafetyNetAppCheckProviderFactory.getInstance()
         )
     }
-
-
 }
+
 

@@ -1,5 +1,6 @@
 package com.example.todolist.ui.mainfragment
 
+import android.annotation.SuppressLint
 import android.app.ActionBar.LayoutParams
 import android.graphics.Color
 import android.util.Log
@@ -10,13 +11,10 @@ import android.view.inputmethod.EditorInfo
 import android.widget.PopupMenu
 import androidx.recyclerview.widget.RecyclerView
 import com.example.todolist.R
-import com.example.todolist.data.model.Data
 import com.example.todolist.data.model.SubTodo
 import com.example.todolist.data.model.Todo
-import com.example.todolist.data.model.UserData
 import com.example.todolist.databinding.ItemTodoBinding
 import com.example.todolist.ui.activity.TAG
-import com.google.gson.Gson
 
 typealias ListWasUpdated = (list:MutableList<Todo>) -> Unit
 
@@ -24,6 +22,7 @@ class ToDoAdapter(private val listWasUpdated: ListWasUpdated):RecyclerView.Adapt
     class ToDoViewHolder(val binding:ItemTodoBinding):RecyclerView.ViewHolder(binding.root)
 
     private var listToDo = mutableListOf<Todo>()
+    @SuppressLint("NotifyDataSetChanged")
     fun setData(list:List<Todo>?){
         if (list == null) return
         listToDo = list.sortedBy { it.deadlineLong }.toMutableList()
@@ -82,8 +81,6 @@ class ToDoAdapter(private val listWasUpdated: ListWasUpdated):RecyclerView.Adapt
 
         holder.binding.titleTodo.text = item.titleToDo
 
-        if (!isShowSecretTodo)holder.binding.titleTodo.visibility = View.GONE
-
         holder.binding.titleTodo.setOnLongClickListener { view ->
             val popupMenu = PopupMenu(holder.itemView.context,view)
             popupMenu.menu.add(holder.itemView.context.getString(R.string.delete))
@@ -101,27 +98,6 @@ class ToDoAdapter(private val listWasUpdated: ListWasUpdated):RecyclerView.Adapt
             true
         }
 
-//        holder.binding.notes.apply {
-//            if (isShowSecretTodo) visibility = View.VISIBLE
-//            else {
-//                visibility = View.GONE
-//                return@apply
-//            }
-//            setText(item.notes)
-//            setRawInputType(InputType.TYPE_CLASS_TEXT)
-//            setOnEditorActionListener { view, actionId, _ ->
-//                if (actionId == EditorInfo.IME_ACTION_DONE) {
-//                    view.clearFocus()
-//                    val str = view.text.toString()
-//                    if (str == listToDo[position].notes) return@setOnEditorActionListener true
-//                    listToDo[position].notes = str
-//                    Log.i(TAG, "list was updated. cause : edit note")
-//                    listWasUpdated(listToDo)
-//                    return@setOnEditorActionListener false
-//                }
-//                false
-//            }
-//        }
         holder.binding.deadline.apply {
             text = item.deadlineString
             val timeLeftBeforeDeadline = item.deadlineLong - MainFragment.getCurrentTime()
@@ -139,8 +115,6 @@ class ToDoAdapter(private val listWasUpdated: ListWasUpdated):RecyclerView.Adapt
 
     }
     override fun getItemCount(): Int = listToDo.size
-
-    fun toJson(userId:String): String = Gson().toJson(Data(listToDo,null, UserData(userId)))
 
     fun getRawList() = listToDo
 }
