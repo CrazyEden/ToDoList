@@ -1,4 +1,4 @@
-package com.example.todolist.ui.mainfragment
+package com.example.todolist.presentation.mainfragment
 
 import android.annotation.SuppressLint
 import android.app.ActionBar.LayoutParams
@@ -14,7 +14,7 @@ import com.example.todolist.R
 import com.example.todolist.data.model.SubTodo
 import com.example.todolist.data.model.Todo
 import com.example.todolist.databinding.ItemTodoBinding
-import com.example.todolist.ui.activity.TAG
+import com.example.todolist.presentation.activity.TAG
 
 typealias ListWasUpdated = (list:MutableList<Todo>) -> Unit
 
@@ -58,9 +58,10 @@ class ToDoAdapter(private val listWasUpdated: ListWasUpdated):RecyclerView.Adapt
 
         if(item.secretToDo) holder.binding.iconSecretTodo.visibility = View.VISIBLE
 
-        val subTodoAdapter = SubTodoAdapter{
+        val subTodoAdapter = SubTodoAdapter{ it ->
             listToDo[position].subTodo = it
             Log.i(TAG, "list was updated. cause:subTodo")
+            listToDo[position].isCompleted = it.all { it.isCompleted }
             listWasUpdated(listToDo)
         }
         holder.binding.rcViewSubTodo.adapter = subTodoAdapter

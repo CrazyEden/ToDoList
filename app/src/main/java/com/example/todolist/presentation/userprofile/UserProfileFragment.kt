@@ -1,4 +1,4 @@
-package com.example.todolist.ui.userprofile
+package com.example.todolist.presentation.userprofile
 
 import android.app.AlertDialog
 import android.os.Bundle
@@ -10,8 +10,8 @@ import androidx.fragment.app.viewModels
 import com.example.todolist.R
 import com.example.todolist.databinding.DialogChangeNicknameBinding
 import com.example.todolist.databinding.FragmentUserProfileBinding
-import com.example.todolist.ui.SettingsFragment
-import com.example.todolist.ui.SignInFragment
+import com.example.todolist.presentation.SettingsFragment
+import com.example.todolist.presentation.auth.SignInFragment
 import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint

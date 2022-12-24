@@ -6,4 +6,3 @@ data class Data(
     var listNotes:List<Note>? = null,
     var userData: UserData? = null
 )
-

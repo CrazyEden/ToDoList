@@ -1,4 +1,4 @@
-package com.example.todolist
+package com.example.todolist.utils
 
 import android.content.Context
 import android.net.ConnectivityManager

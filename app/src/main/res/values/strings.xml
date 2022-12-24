@@ -13,14 +13,11 @@
     <string name="create_new_todo">Создание новой ToDO</string>
     <string name="select_datetime_hint">Выбирите дату</string>
     <string name="pick_datetime">Выбрать дату</string>
-    <string name="error_load_user_list">Не удалось загрузить список</string>
     <string name="title_user_list">Список пользователей</string>
     <string name="delete">Удалить</string>
     <string name="sign_in">Войти</string>
     <string name="sign_up">Зарегистрироваться</string>
     <string name="password_reset">Воставновить пароль</string>
-    <string name="email_sent">Сообрещние отправлено на почту</string>
-    <string name="try_later">Попробуйте позже</string>
     <string name="not_all_fields_are_filled">Заполните все поля</string>
     <string name="password_is_too_short">Слишком короткий пароль</string>
     <string name="email_is_invalid">Неверная почта</string>
@@ -40,10 +37,9 @@
     <string name="sign_out">Выйти</string>
     <string name="sign_in_failed">Неверная почта или пароль</string>
     <string name="passwords_dont_match">Пароли не совпадают</string>
-    <string name="unwnown_error">Не удалось связаться с сервером, попробуйте позже</string>
-    <string name="hello_blank_fragment">Hello blank fragment</string>
     <string name="title_note_hint">Название заметки</string>
     <string name="profile_menu">Профиль</string>
     <string name="todo_list_menu">Список ToDo</string>
     <string name="no_ethernet">Нет интернета</string>
+    <string name="error">Что-то пошло не так</string>
 </resources>

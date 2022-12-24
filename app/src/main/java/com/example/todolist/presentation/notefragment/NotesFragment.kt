@@ -1,4 +1,4 @@
-package com.example.todolist.ui.notefragment
+package com.example.todolist.presentation.notefragment
 
 import android.os.Bundle
 import android.view.LayoutInflater

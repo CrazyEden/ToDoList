@@ -1,9 +1,9 @@
 package com.example.todolist.di
 
 import com.example.todolist.data.repositories.FirebaseRepository
-import com.example.todolist.data.repositories.FirebaseRepositoryImpl
 import com.example.todolist.data.repositories.LocalDataRepository
-import com.example.todolist.data.repositories.LocalDataRepositoryImpl
+import com.example.todolist.domain.repositories.FirebaseRepositoryImpl
+import com.example.todolist.domain.repositories.LocalDataRepositoryImpl
 import dagger.Binds
 import dagger.Module
 import dagger.hilt.InstallIn

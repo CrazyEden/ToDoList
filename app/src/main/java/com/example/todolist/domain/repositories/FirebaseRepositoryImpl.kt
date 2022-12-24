@@ -1,11 +1,14 @@
-package com.example.todolist.data.repositories
+package com.example.todolist.domain.repositories
 
 import android.util.Log
 import com.example.todolist.data.model.Data
 import com.example.todolist.data.model.Note
 import com.example.todolist.data.model.Todo
 import com.example.todolist.data.model.UserData
-import com.example.todolist.ui.activity.TAG
+import com.example.todolist.data.repositories.FirebaseRepository
+import com.example.todolist.data.repositories.LocalDataRepository
+import com.example.todolist.presentation.activity.TAG
+import com.google.firebase.auth.AuthCredential
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.DatabaseError
@@ -59,7 +62,7 @@ class FirebaseRepositoryImpl @Inject constructor(
 
     private var obj2: ValueEventListener? = null
     private var pastId: String? = null
-    override fun createToDoObserver(id:String, dataObserver:DataObserver){
+    override fun createToDoObserver(id:String, dataObserver: DataObserver){
         if (obj2 != null && pastId != null){
             database.getReference("data").child(pastId!!).removeEventListener(obj2!!)
             Log.i(TAG,"data observer was removed for id \"$pastId\"")
@@ -87,6 +90,37 @@ class FirebaseRepositoryImpl @Inject constructor(
          }
      }
 
+    override suspend fun signInByGoogle(credential: AuthCredential): Exception? {
+        val authResult = auth.signInWithCredential(credential)
+        authResult.await()
+        if (authResult.isSuccessful){
+            if (database.getReference("data").child(auth.currentUser!!.uid).child("userData")
+                    .child("nickname").get().await().getValue(String::class.java) == null){
+                database.getReference("data").child(auth.currentUser!!.uid).child("userData")
+                    .child("nickname").setValue(auth.currentUser?.displayName).await()
+                return null
+            }
+            return null
+        }
 
+        return authResult.exception
+    }
 
+    override suspend fun signInWithEmailAndPassword(email: String, password: String): Exception? {
+        val signIn = auth.signInWithEmailAndPassword(email, password)
+        signIn.await()
+        return if (signIn.isSuccessful) null
+        else signIn.exception
+    }
+
+    override fun sendEmailToRestPassword(email: String) {
+        auth.sendPasswordResetEmail(email)
+    }
+
+    override suspend fun createNewUserByEmailAndPassword(email: String, password: String): Exception? {
+        val user = auth.createUserWithEmailAndPassword(email, password)
+        user.await()
+        return if (user.isSuccessful) null
+        else user.exception
+    }
 }

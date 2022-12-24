@@ -1,5 +1,6 @@
-package com.example.todolist.ui.notefragment
+package com.example.todolist.presentation.notefragment
 
+import android.annotation.SuppressLint
 import android.text.InputType
 import android.view.LayoutInflater
 import android.view.ViewGroup
@@ -35,6 +36,7 @@ class NotesAdapter(private val listNotesWasUpdated: ListNotesWasUpdated)
         listNotesWasUpdated(notesList)
     }
 
+    @SuppressLint("NotifyDataSetChanged")
     fun setData(notes:List<Note>?){
         if (notes==null) return
         notesList = notes.toMutableList()

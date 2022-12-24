@@ -1,4 +1,4 @@
-package com.example.todolist.ui.notefragment
+package com.example.todolist.presentation.notefragment
 
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData

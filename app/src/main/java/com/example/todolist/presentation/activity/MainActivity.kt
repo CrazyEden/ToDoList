@@ -1,4 +1,4 @@
-package com.example.todolist.ui.activity
+package com.example.todolist.presentation.activity
 
 
 import android.graphics.drawable.ColorDrawable
@@ -8,13 +8,13 @@ import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentManager
-import com.example.todolist.NetworkChangeReceiver
 import com.example.todolist.R
 import com.example.todolist.databinding.ActivityMainBinding
-import com.example.todolist.ui.SignInFragment
-import com.example.todolist.ui.mainfragment.MainFragment
-import com.example.todolist.ui.notefragment.NotesFragment
-import com.example.todolist.ui.userprofile.UserProfileFragment
+import com.example.todolist.presentation.auth.SignInFragment
+import com.example.todolist.presentation.mainfragment.MainFragment
+import com.example.todolist.presentation.notefragment.NotesFragment
+import com.example.todolist.presentation.userprofile.UserProfileFragment
+import com.example.todolist.utils.NetworkChangeReceiver
 import com.google.firebase.FirebaseApp
 import com.google.firebase.appcheck.FirebaseAppCheck
 import com.google.firebase.appcheck.safetynet.SafetyNetAppCheckProviderFactory

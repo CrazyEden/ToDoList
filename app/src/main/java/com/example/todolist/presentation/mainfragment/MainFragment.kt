@@ -1,4 +1,4 @@
-package com.example.todolist.ui.mainfragment
+package com.example.todolist.presentation.mainfragment
 
 import android.app.AlertDialog
 import android.app.DatePickerDialog
@@ -15,7 +15,7 @@ import com.example.todolist.R
 import com.example.todolist.data.model.Todo
 import com.example.todolist.databinding.DialogCreateNewTodoBinding
 import com.example.todolist.databinding.FragmentMainBinding
-import com.example.todolist.ui.activity.TAG
+import com.example.todolist.presentation.activity.TAG
 import dagger.hilt.android.AndroidEntryPoint
 import java.text.SimpleDateFormat
 import java.util.*

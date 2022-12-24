@@ -1,4 +1,4 @@
-package com.example.todolist.ui.loginbyemailfragment
+package com.example.todolist.presentation.auth.loginbyemailfragment
 
 import android.os.Bundle
 import android.view.LayoutInflater

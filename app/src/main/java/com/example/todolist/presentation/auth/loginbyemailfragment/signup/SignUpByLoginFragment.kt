@@ -1,26 +1,22 @@
-package com.example.todolist.ui.loginbyemailfragment.signup
+package com.example.todolist.presentation.auth.loginbyemailfragment.signup
 
 import android.os.Bundle
 import android.text.TextUtils
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.viewModels
 import com.example.todolist.R
 import com.example.todolist.databinding.FragmentSignUpByLoginBinding
-import com.example.todolist.ui.activity.TAG
-import com.example.todolist.ui.mainfragment.MainFragment
-import com.google.firebase.auth.FirebaseAuth
+import com.example.todolist.presentation.mainfragment.MainFragment
 import dagger.hilt.android.AndroidEntryPoint
-import javax.inject.Inject
 
 @AndroidEntryPoint
 class SignUpByLoginFragment : Fragment() {
     lateinit var binding: FragmentSignUpByLoginBinding
-    @Inject lateinit var auth: FirebaseAuth
-
+    private val vModel:SignUpViewModel by viewModels()
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?,
@@ -35,20 +31,21 @@ class SignUpByLoginFragment : Fragment() {
             if (!email.isEmailValid()) return@setOnClickListener showLongToast(getString(R.string.email_is_invalid))
             if (password.length < 6) return@setOnClickListener showLongToast(getString(R.string.password_is_too_short))
             if (password != passwordSecond) return@setOnClickListener showLongToast(getString(R.string.passwords_dont_match))
-            auth.createUserWithEmailAndPassword(email, password).addOnCompleteListener {
-                if (it.isSuccessful) {
-                    parentFragmentManager.beginTransaction()
-                        .replace(R.id.container,MainFragment())
-                        .commit()
-                    return@addOnCompleteListener
-                }
-                showLongToast(
-                    when(it.exception?.message){
-                        "The email address is already in use by another account." -> getString(R.string.the_email_is_already_registered)
-                        else -> getString(R.string.register_is_failed_try_again_later)
-                    })
-                Log.wtf(TAG, "registerByPassword: ",it.exception)
+
+            vModel.createUserByEmailAndPassword(email, password)
+        }
+        vModel.createUserLiveData.observe(viewLifecycleOwner){
+            if (it == null){
+                parentFragmentManager.beginTransaction()
+                    .replace(R.id.container,MainFragment())
+                    .commit()
+                return@observe
             }
+            showLongToast(
+                when(it.message){
+                    "The email address is already in use by another account." -> getString(R.string.the_email_is_already_registered)
+                    else -> getString(R.string.register_is_failed_try_again_later)
+                })
 
         }
         return binding.root

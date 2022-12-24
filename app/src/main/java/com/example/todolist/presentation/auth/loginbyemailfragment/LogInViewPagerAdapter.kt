@@ -1,11 +1,11 @@
-package com.example.todolist.ui.loginbyemailfragment
+package com.example.todolist.presentation.auth.loginbyemailfragment
 
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentManager
 import androidx.lifecycle.Lifecycle
 import androidx.viewpager2.adapter.FragmentStateAdapter
-import com.example.todolist.ui.loginbyemailfragment.signin.SignInByLoginFragment
-import com.example.todolist.ui.loginbyemailfragment.signup.SignUpByLoginFragment
+import com.example.todolist.presentation.auth.loginbyemailfragment.signin.SignInByLoginFragment
+import com.example.todolist.presentation.auth.loginbyemailfragment.signup.SignUpByLoginFragment
 
 class LogInViewPagerAdapter(fragmentManager: FragmentManager, lifecycle: Lifecycle)
     :FragmentStateAdapter(fragmentManager,lifecycle) {

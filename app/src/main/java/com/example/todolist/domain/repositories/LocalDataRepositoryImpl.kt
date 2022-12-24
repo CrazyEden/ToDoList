@@ -1,8 +1,9 @@
-package com.example.todolist.data.repositories
+package com.example.todolist.domain.repositories
 
 import android.content.SharedPreferences
 import android.graphics.Color
 import com.example.todolist.data.model.Data
+import com.example.todolist.data.repositories.LocalDataRepository
 import com.google.gson.Gson
 import javax.inject.Inject
 

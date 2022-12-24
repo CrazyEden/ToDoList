@@ -1,5 +1,6 @@
-package com.example.todolist.ui.mainfragment
+package com.example.todolist.presentation.mainfragment
 
+import android.annotation.SuppressLint
 import android.graphics.Color
 import android.util.Log
 import android.view.LayoutInflater
@@ -7,7 +8,7 @@ import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
 import com.example.todolist.data.model.SubTodo
 import com.example.todolist.databinding.SubTodoBinding
-import com.example.todolist.ui.activity.TAG
+import com.example.todolist.presentation.activity.TAG
 
 typealias SubTodoWasUpdated = (list:MutableList<SubTodo>) -> Unit
 
@@ -16,6 +17,7 @@ class SubTodoAdapter(val subTodoWasUpdated:SubTodoWasUpdated) : RecyclerView.Ada
 
     private var list = mutableListOf<SubTodo>()
 
+    @SuppressLint("NotifyDataSetChanged")
     fun setData(subTodo: List<SubTodo>?){
         list = subTodo?.toMutableList() ?: return
         notifyDataSetChanged()

@@ -1,4 +1,4 @@
-package com.example.todolist.ui
+package com.example.todolist.presentation.auth
 
 import android.content.Intent
 import android.os.Bundle
@@ -6,29 +6,26 @@ import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Toast
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.viewModels
 import com.example.todolist.R
 import com.example.todolist.databinding.FragmentSignInBinding
-import com.example.todolist.ui.activity.TAG
-import com.example.todolist.ui.loginbyemailfragment.LogInFragment
-import com.example.todolist.ui.mainfragment.MainFragment
+import com.example.todolist.presentation.auth.loginbyemailfragment.LogInFragment
+import com.example.todolist.presentation.mainfragment.MainFragment
 import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.android.gms.auth.api.signin.GoogleSignInClient
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions
-import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.GoogleAuthProvider
-import com.google.firebase.database.FirebaseDatabase
 import dagger.hilt.android.AndroidEntryPoint
-import javax.inject.Inject
 
 @AndroidEntryPoint
 class SignInFragment : Fragment() {
     private lateinit var binding:FragmentSignInBinding
+    private val vModel: SignInViewModel by viewModels()
 
-    @Inject lateinit var auth: FirebaseAuth
-    @Inject lateinit var database: FirebaseDatabase
 
     private lateinit var launcher: ActivityResultLauncher<Intent>
     override fun onCreateView(
@@ -48,12 +45,16 @@ class SignInFragment : Fragment() {
             setOnClickListener { singInGoogle() }
         }
         binding.buttonEmailAndPasswordSignIn.apply {
-            setOnClickListener { singInByPassword() }
+            setOnClickListener { singInByEmail() }
+        }
+        vModel.googleSignInResult.observe(viewLifecycleOwner){
+            if (it == null) return@observe openFragment()
+            Toast.makeText(requireContext(),getString(R.string.error),Toast.LENGTH_SHORT).show()
         }
         return binding.root
     }
 
-    private fun singInByPassword() {
+    private fun singInByEmail() {
         parentFragmentManager.beginTransaction()
             .addToBackStack(null)
             .replace(R.id.container, LogInFragment())
@@ -76,17 +77,7 @@ class SignInFragment : Fragment() {
 
     private fun fireAuth(token:String){
         val cred = GoogleAuthProvider.getCredential(token,null)
-        auth.signInWithCredential(cred).addOnCompleteListener {
-            if (it.isSuccessful) {
-                database.getReference("data").child(auth.currentUser!!.uid).child("userData")
-                    .child("nickname").setValue(auth.currentUser?.displayName)
-                    .addOnSuccessListener {
-                        openFragment()
-                    }
-                Log.d(TAG, "done!")
-            }
-            else Log.d(TAG, "no done!")
-        }
+        vModel.googleSignIn(cred)
     }
 
     private fun openFragment(){

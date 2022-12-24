@@ -1,26 +1,22 @@
-package com.example.todolist.ui.loginbyemailfragment.signin
+package com.example.todolist.presentation.auth.loginbyemailfragment.signin
 
 import android.os.Bundle
 import android.text.TextUtils
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.viewModels
 import com.example.todolist.R
 import com.example.todolist.databinding.FragmentSignInByLoginBinding
-import com.example.todolist.ui.activity.TAG
-import com.example.todolist.ui.mainfragment.MainFragment
-import com.google.firebase.auth.FirebaseAuth
+import com.example.todolist.presentation.mainfragment.MainFragment
 import dagger.hilt.android.AndroidEntryPoint
-import javax.inject.Inject
 
 @AndroidEntryPoint
 class SignInByLoginFragment : Fragment() {
     lateinit var binding:FragmentSignInByLoginBinding
-    @Inject lateinit var auth: FirebaseAuth
-
+    private val vModel: SignInViewModel by viewModels()
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?,
@@ -34,28 +30,20 @@ class SignInByLoginFragment : Fragment() {
             if (!email.isEmailValid()) return@setOnClickListener showLongToast(getString(R.string.email_is_invalid))
             if (password.length < 6) return@setOnClickListener showLongToast(getString(R.string.password_is_too_short))
 
-            auth.signInWithEmailAndPassword(email, password).addOnCompleteListener {
-                if (it.isSuccessful) {
-                    parentFragmentManager.beginTransaction()
-                        .replace(R.id.container,MainFragment())
-                        .commit()
-                    return@addOnCompleteListener
-                }
-                showLongToast(getString(R.string.sign_in_failed))
-                Log.i(TAG, "registerByPassword: ",it.exception)
-            }
-
+            vModel.signInWithEmailAndPassword(email,password)
         }
         binding.buttonResetPassword.setOnClickListener {
             val email = binding.editTextEmail.text.toString()
             if (!email.isEmailValid()) return@setOnClickListener showLongToast(getString(R.string.email_is_invalid))
-            auth.sendPasswordResetEmail(email).addOnCompleteListener {
-                if (it.isSuccessful)
-                    return@addOnCompleteListener showLongToast(getString(R.string.email_sent))
 
-                Log.wtf(TAG, "onCreateView: ", it.exception)
-                showLongToast(getString(R.string.unwnown_error))
-            }
+            vModel.sendEmailToResetPassword(email)
+        }
+        vModel.signInWithEmailAndPassword.observe(viewLifecycleOwner){
+            if (it==null){
+                parentFragmentManager.beginTransaction()
+                    .replace(R.id.container,MainFragment())
+                    .commit()
+            } else showLongToast(getString(R.string.sign_in_failed))
         }
         return binding.root
     }

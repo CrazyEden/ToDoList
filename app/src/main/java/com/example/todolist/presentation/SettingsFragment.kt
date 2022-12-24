@@ -1,4 +1,4 @@
-package com.example.todolist.ui
+package com.example.todolist.presentation
 
 import android.graphics.drawable.ColorDrawable
 import android.os.Bundle
@@ -9,7 +9,7 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import com.example.todolist.R
 import com.example.todolist.databinding.FragmentSettingsBinding
-import com.example.todolist.ui.activity.ActivityViewModel
+import com.example.todolist.presentation.activity.ActivityViewModel
 import vadiole.colorpicker.ColorModel
 import vadiole.colorpicker.ColorPickerDialog
 
