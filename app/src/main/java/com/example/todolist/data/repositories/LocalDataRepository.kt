@@ -14,4 +14,7 @@ interface LocalDataRepository {
 
     fun getLocalToDoList(): Data?
     fun setLocalToDoList(json:String)
+
+    fun getIsDarkMode(): Boolean
+    fun setIsDarkMode(isOn:Boolean)
 }

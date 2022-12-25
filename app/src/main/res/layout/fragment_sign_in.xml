@@ -1,11 +1,31 @@
 <?xml version="1.0" encoding="utf-8"?>
 
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
     android:orientation="vertical"
     android:gravity="center"
     android:layout_margin="8dp"
     android:layout_width="match_parent"
     android:layout_height="match_parent">
+    <ImageView
+        android:src="@mipmap/ic_launcher_round"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"/>
+    <TextView
+        android:text="@string/welcome_to_todolist"
+        android:textSize="35sp"
+        android:textStyle="bold"
+        android:layout_marginBottom="100dp"
+        android:gravity="center"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"/>
+    <TextView
+        android:text="@string/a_sign_in"
+        android:gravity="center"
+        android:textSize="18sp"
+        android:layout_marginBottom="7dp"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"/>
     <androidx.appcompat.widget.AppCompatButton
         android:id="@+id/buttonGoogleSignIn"
         android:layout_width="match_parent"
@@ -13,11 +33,18 @@
         android:textAllCaps="false"
         android:textSize="18sp"
         android:background="@drawable/outlined_ripple_grey"
+        android:drawablePadding="-28sp"
         android:drawableStart="@drawable/ic_google"
+        android:paddingStart="8dp"
+        android:paddingEnd="8dp"
         android:text="@string/google"/>
-    <Space
+    <TextView
+        android:text="@string/or"
+        android:gravity="center"
+        android:layout_marginTop="10dp"
+        android:layout_marginBottom="10dp"
         android:layout_width="match_parent"
-        android:layout_height="20dp"/>
+        android:layout_height="wrap_content"/>
 
     <androidx.appcompat.widget.AppCompatButton
         android:id="@+id/button_email_and_password_sign_in"
@@ -26,6 +53,9 @@
         android:textAllCaps="false"
         android:textSize="18sp"
         android:drawableStart="@drawable/ic_email"
+        android:drawablePadding="-28sp"
+        android:paddingStart="8dp"
+        android:paddingEnd="8dp"
         android:background="@drawable/outlined_ripple_grey"
         android:text="@string/Email"/>
 </LinearLayout>

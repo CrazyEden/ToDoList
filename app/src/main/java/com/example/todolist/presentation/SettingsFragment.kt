@@ -53,6 +53,12 @@ class SettingsFragment : Fragment() {
                 }
             }
         }
+        binding.switcher.apply {
+            isChecked = vModel.getDarkMode()
+            setOnCheckedChangeListener { _, isChecked ->
+                vModel.setDarkMode(isChecked)
+            }
+        }
 
         return binding.root
     }

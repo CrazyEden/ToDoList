@@ -37,5 +37,13 @@ class ActivityViewModel @Inject constructor(
     }
     fun getWindowColor() = localDataRepository.getWindowColor()
 
+    private val _darkModeLiveData = MutableLiveData<Boolean>()
+    val darkModeLiveData:LiveData<Boolean> = _darkModeLiveData
+    fun setDarkMode(isOn:Boolean){
+        localDataRepository.setIsDarkMode(isOn)
+        _darkModeLiveData.postValue(isOn)
+    }
+    fun getDarkMode() = localDataRepository.getIsDarkMode()
+
     fun isCurrentUserNull() = auth.currentUser == null
 }

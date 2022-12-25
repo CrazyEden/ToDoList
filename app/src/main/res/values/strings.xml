@@ -42,4 +42,8 @@
     <string name="todo_list_menu">Список ToDo</string>
     <string name="no_ethernet">Нет интернета</string>
     <string name="error">Что-то пошло не так</string>
+    <string name="a_sign_in">Вход</string>
+    <string name="or">или</string>
+    <string name="welcome_to_todolist">Добро пожаловть в ToDo лист</string>
+    <string name="dark_mode">Dark Mode</string>
 </resources>

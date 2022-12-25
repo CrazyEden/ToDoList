@@ -31,8 +31,15 @@ class LocalDataRepositoryImpl @Inject constructor(
         return Gson().fromJson(json, Data::class.java)
     }
     override fun setLocalToDoList(json:String): Unit = sharedPreferences.edit().putString("history",json).apply()
+    override fun getIsDarkMode(): Boolean =
+        sharedPreferences.getBoolean(sharedPreferencesIsDarkMode,true)
+
+    override fun setIsDarkMode(isOn: Boolean) =
+        sharedPreferences.edit().putBoolean(sharedPreferencesIsDarkMode,isOn).apply()
+
 
     private val sharedPreferencesBackgroundColorKey = "BackgroundColor"
     private val sharedPreferencesToolbarColorKey = "ToolbarColor"
     private val sharedPreferencesWindowColorKey = "Window"
+    private val sharedPreferencesIsDarkMode = "DarkMode"
 }
