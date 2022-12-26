@@ -1,22 +1,25 @@
-package com.example.todolist.presentation.notefragment
+package com.example.todolist.presentation.notes
 
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.core.os.bundleOf
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.RecyclerView
 import androidx.recyclerview.widget.RecyclerView.OnScrollListener
 import androidx.recyclerview.widget.RecyclerView.ViewHolder
+import com.example.todolist.R
 import com.example.todolist.data.model.Note
 import com.example.todolist.databinding.FragmentNotesBinding
+import com.example.todolist.presentation.notes.note.NoteInfoFragment
 import com.google.android.material.snackbar.Snackbar
 import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint
-class NotesFragment : Fragment() {
+class NotesFragment : Fragment(),NoteAdapterInt {
     private lateinit var binding: FragmentNotesBinding
 
     private val vModel:NotesViewModel by viewModels()
@@ -28,14 +31,18 @@ class NotesFragment : Fragment() {
     ): View {
         binding = FragmentNotesBinding.inflate(inflater,container,false)
 
-        val adapter = NotesAdapter{ vModel.uploadNotesToFirebase(it) }
+        val adapter = NotesAdapter(this)
         binding.rcViewNotes.adapter = adapter
         vModel.myDataLiveData.observe(viewLifecycleOwner){
             adapter.setData(it?.listNotes)
         }
 
         binding.buttonAddNote.setOnClickListener {
-            adapter.addData(Note("",""))
+
+            parentFragmentManager.beginTransaction()
+                .addToBackStack(null)
+                .replace(R.id.container, NoteInfoFragment())
+                .commit()
         }
         binding.rcViewNotes.addOnScrollListener(object : OnScrollListener() {
             override fun onScrolled(recyclerView: RecyclerView, dx: Int, dy: Int) {
@@ -61,5 +68,20 @@ class NotesFragment : Fragment() {
                     .show()
             }
         }).attachToRecyclerView(binding.rcViewNotes)
+    }
+
+    override fun listNotesWasUpdated(notesList: MutableList<Note>) {
+        vModel.uploadNotesToFirebase(notesList)
+    }
+
+    override fun onItemClick(note: Note,position: Int) {
+        val args = bundleOf(
+            NoteInfoFragment.NOTE_KEY to note,
+            NoteInfoFragment.POSITION_KEY to position
+        )
+        parentFragmentManager.beginTransaction()
+            .addToBackStack(null)
+            .replace(R.id.container, NoteInfoFragment::class.java,args)
+            .commit()
     }
 }

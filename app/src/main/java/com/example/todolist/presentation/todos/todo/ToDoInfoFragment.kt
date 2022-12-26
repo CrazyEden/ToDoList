@@ -1,4 +1,4 @@
-package com.example.todolist.presentation.ShowEditCreateToDo
+package com.example.todolist.presentation.todos.todo
 
 import android.app.DatePickerDialog
 import android.app.TimePickerDialog
@@ -16,54 +16,98 @@ import androidx.fragment.app.viewModels
 import com.example.todolist.R
 import com.example.todolist.data.model.SubTodo
 import com.example.todolist.data.model.Todo
-import com.example.todolist.databinding.FragmentShowEditCreateToDoBinding
+import com.example.todolist.databinding.FragmentToDoInfoBinding
 import com.example.todolist.presentation.activity.TAG
-import com.example.todolist.presentation.mainfragment.MainFragment
-import com.example.todolist.presentation.mainfragment.SubTodoAdapter
+import com.example.todolist.presentation.todos.SubTodoAdapter
+import com.example.todolist.presentation.todos.ToDoListFragment
 import dagger.hilt.android.AndroidEntryPoint
 import java.text.SimpleDateFormat
 import java.util.*
 
 @AndroidEntryPoint
-class ShowEditCreateToDoFragment : Fragment() {
-    private val vModel: ShowEditCreateViewModel by viewModels()
+class ToDoInfoFragment : Fragment() {
+    private val vModel: ToDoInfoViewModel by viewModels()
     private lateinit var todo: Todo
     private lateinit var id: String
     private lateinit var popupMenu:PopupMenu
     private var position: Int? = null
-    private lateinit var binding:FragmentShowEditCreateToDoBinding
+    private lateinit var binding:FragmentToDoInfoBinding
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        arguments?.let {
-            @Suppress("DEPRECATION")
-            todo = it.getParcelable(TODO_KEY) as? Todo ?:Todo()
-            id = it.getString(ID_KEY) ?: throw NullPointerException("fragment require the id")
-            position = it.getInt(TODO_POSITION_KEY,-1)
-        }
+
+        @Suppress("DEPRECATION")
+        todo = arguments?.getParcelable(TODO_KEY) as? Todo ?:Todo()
+        id = arguments?.getString(ID_KEY) ?: throw NullPointerException("fragment require the id")
+        position = arguments?.getInt(TODO_POSITION_KEY,-1)
+
         if (position == -1) position = null
     }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
-        binding = FragmentShowEditCreateToDoBinding.inflate(inflater,container,false)
+        binding = FragmentToDoInfoBinding.inflate(inflater,container,false)
+        initUi()
+        vModel.updateLiveData.observe(viewLifecycleOwner){
+            if (it==null)
+                parentFragmentManager.beginTransaction()
+                    .replace(R.id.container,ToDoListFragment())
+                    .commit()
+            else
+                Log.wtf(TAG, "updateLiveData: ", it)
+        }
+
+        return binding.root
+    }
+
+    private fun inflatePopupMenu() {
         popupMenu = PopupMenu(context,binding.titleTodo)
+        popupMenu.setOnMenuItemClickListener {
+            todo.secretToDo = !todo.secretToDo
+            updateSecretIcon()
+            updatePopupMenu()
+            true
+        }
         updatePopupMenu()
+    }
+
+    private fun initUi(){
+        inflatePopupMenu()
+
+        if (todo.deadlineString.isNotEmpty()) {
+            binding.deadline.text = todo.deadlineString
+            updateDeadlineColor()
+        }
+
+        if (todo.secretToDo)
+            binding.iconSecretTodo.visibility = View.VISIBLE
+
+        if (position == null)
+            binding.floatButton.setImageResource(R.drawable.ic_create)
+
+        binding.titleTodo.setText(todo.titleToDo)
+
+        binding.titleTodo.addTextChangedListener {
+            todo.titleToDo = it.toString()
+        }
+        initAutoHideFOB()
+        createClickListeners()
+        inflateRecyclerView()
+    }
+
+    private fun initAutoHideFOB() {
+        binding.todofrScroller.setOnScrollChangeListener { _, _, scrollY, _, oldScrollY ->
+            if (scrollY > oldScrollY)binding.floatButton.hide()
+            else binding.floatButton.show()
+            if (scrollY == 0) binding.floatButton.show()
+        }
+    }
+
+    private fun inflateRecyclerView() {
         val adapter = SubTodoAdapter{ it ->
             todo.isCompleted = it.all { it.isCompleted }
             todo.subTodo = it
         }
         binding.rcViewSubTodo.adapter = adapter
         adapter.setData(todo.subTodo)
-        binding.titleTodo.setText(todo.titleToDo)
-        if (todo.deadlineString.isNotEmpty()) {
-            binding.deadline.text = todo.deadlineString
-            updateDeadlineColor()
-        }
-        if (todo.secretToDo)
-            binding.iconSecretTodo.visibility = View.VISIBLE
-        if (position == null)
-            binding.floatButton.setImageResource(R.drawable.ic_create)
-
-
         binding.buttonAddSubTodo.setOnClickListener {
             val text = binding.textSubTodo.text.toString()
             if (text.isEmpty()) return@setOnClickListener
@@ -72,22 +116,9 @@ class ShowEditCreateToDoFragment : Fragment() {
             binding.textSubTodo.text.clear()
             binding.textSubTodo.clearFocus()
         }
+    }
 
-        binding.titleTodo.addTextChangedListener {
-            todo.titleToDo = it.toString()
-        }
-        binding.deadline.setOnClickListener {
-            openDialogToPickDatetime()
-        }
-
-
-
-        popupMenu.setOnMenuItemClickListener {
-            todo.secretToDo = !todo.secretToDo
-            updateSecretIcon()
-            updatePopupMenu()
-            true
-        }
+    private fun createClickListeners(){
         binding.root.setOnLongClickListener {
             popupMenu.show()
             true
@@ -104,15 +135,10 @@ class ShowEditCreateToDoFragment : Fragment() {
             else
                 vModel.createNewTodo(todo, id)
         }
-        vModel.updateLiveData.observe(viewLifecycleOwner){
-            if (it==null)
-                parentFragmentManager.beginTransaction()
-                    .replace(R.id.container,MainFragment())
-                    .commit()
-            else
-                Log.wtf(TAG, "updateLiveData: ", it)
+
+        binding.deadline.setOnClickListener {
+            openDialogToPickDatetime()
         }
-        return binding.root
     }
 
     private fun updatePopupMenu() {
@@ -152,7 +178,7 @@ class ShowEditCreateToDoFragment : Fragment() {
     }
 
     private fun updateDeadlineColor() {
-        val timeLeftBeforeDeadline = todo.deadlineLong - MainFragment.getCurrentTime()
+        val timeLeftBeforeDeadline = todo.deadlineLong - ToDoListFragment.getCurrentTime()
         binding.deadline.setTextColor(when{
             timeLeftBeforeDeadline < 1 -> Color.BLACK                                //deadline was left
             timeLeftBeforeDeadline > 7889229000 -> Color.GREEN                       //3 month+

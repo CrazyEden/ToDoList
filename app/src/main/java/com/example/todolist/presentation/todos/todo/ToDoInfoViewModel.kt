@@ -1,4 +1,4 @@
-package com.example.todolist.presentation.ShowEditCreateToDo
+package com.example.todolist.presentation.todos.todo
 
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
@@ -12,7 +12,7 @@ import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
-class ShowEditCreateViewModel @Inject constructor(
+class ToDoInfoViewModel @Inject constructor(
     private val firebaseRepository: FirebaseRepository
 ):ViewModel() {
 

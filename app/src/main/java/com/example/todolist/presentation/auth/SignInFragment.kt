@@ -14,7 +14,7 @@ import androidx.fragment.app.viewModels
 import com.example.todolist.R
 import com.example.todolist.databinding.FragmentSignInBinding
 import com.example.todolist.presentation.auth.loginbyemailfragment.LogInFragment
-import com.example.todolist.presentation.mainfragment.MainFragment
+import com.example.todolist.presentation.todos.ToDoListFragment
 import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.android.gms.auth.api.signin.GoogleSignInClient
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions
@@ -82,7 +82,7 @@ class SignInFragment : Fragment() {
 
     private fun openFragment(){
         parentFragmentManager.beginTransaction()
-            .replace(R.id.container,MainFragment())
+            .replace(R.id.container,ToDoListFragment())
             .commit()
     }
 }

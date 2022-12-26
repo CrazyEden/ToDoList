@@ -10,8 +10,8 @@ import androidx.fragment.app.viewModels
 import com.example.todolist.R
 import com.example.todolist.databinding.DialogChangeNicknameBinding
 import com.example.todolist.databinding.FragmentUserProfileBinding
-import com.example.todolist.presentation.SettingsFragment
 import com.example.todolist.presentation.auth.SignInFragment
+import com.example.todolist.presentation.userprofile.settings.SettingsFragment
 import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint
@@ -24,16 +24,16 @@ class UserProfileFragment : Fragment() {
     ): View {
         binding = FragmentUserProfileBinding.inflate(inflater,container,false)
         vModel.myDataLiveData.observe(viewLifecycleOwner){it->
-            val countOfTodos = "Колличество ваших ToDo: ${it?.listTodo?.size}"
+            val countOfTodos = "Колличество ваших задач: ${it?.listTodo?.size}"
             binding.countOfToDos.text = countOfTodos
             var endedTodo = 0
             it?.listTodo?.forEach { if (it.isCompleted) endedTodo++ }
-            val endedTodoStr = "Колличество законченых ToDo: $endedTodo"
+            val endedTodoStr = "Колличество выполненных: $endedTodo"
             binding.countOfEndedToDos.text = endedTodoStr
             val toDoInWork = it?.listTodo?.size?.minus(endedTodo) ?: 0
-            val toDoInWorkStr = "Колличество ToDo в работе: $toDoInWork"
+            val toDoInWorkStr = "Колличество задач в работе: $toDoInWork"
             binding.countOfToDosInWork.text = toDoInWorkStr
-            binding.userNickName.text = it?.userData?.nickname ?: "У вас не установлен Nickname"
+            binding.userNickName.text = it?.userData?.nickname ?: "У вас не установлено имя"
             val countNotes = "Колличество заметок: ${it?.listNotes?.size}"
             binding.countOfNotes.text = countNotes
         }
@@ -46,13 +46,13 @@ class UserProfileFragment : Fragment() {
         binding.buttonSettings.setOnClickListener {
             parentFragmentManager.beginTransaction()
                 .addToBackStack(null)
-                .replace(R.id.container,SettingsFragment())
+                .replace(R.id.container, SettingsFragment())
                 .commit()
         }
         binding.userNickName.setOnClickListener {
             val dialogChangeNicknameBinding = DialogChangeNicknameBinding.inflate(layoutInflater)
             val oldNick = binding.userNickName.text
-            if (oldNick != "У вас не установлен Nickname")
+            if (oldNick != "У вас не установлео имя")
                 dialogChangeNicknameBinding.nicknameEditTextView.setText(oldNick)
             AlertDialog.Builder(context)
                 .setView(dialogChangeNicknameBinding.root)

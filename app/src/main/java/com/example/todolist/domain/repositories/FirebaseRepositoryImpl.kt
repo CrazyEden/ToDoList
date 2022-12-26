@@ -143,4 +143,24 @@ class FirebaseRepositoryImpl @Inject constructor(
         return if (res.isSuccessful) null
         else res.exception
     }
+
+    private suspend fun getCountNotes()=
+        database.getReference("data").child(getAuthUserUid()).child("listNotes")
+            .get().await().children.count()
+
+    override suspend fun createNewNote(note: Note): Exception? {
+        val res = database.getReference("data").child(getAuthUserUid()).child("listNotes")
+            .child(getCountNotes().toString()).setValue(note)
+        res.await()
+        return if (res.isSuccessful) null
+        else res.exception
+    }
+
+    override suspend fun updateNote(note: Note, position: Int): Exception? {
+        val res = database.getReference("data").child(getAuthUserUid()).child("listNotes")
+            .child(position.toString()).setValue(note)
+        res.await()
+        return if (res.isSuccessful) null
+        else res.exception
+    }
 }

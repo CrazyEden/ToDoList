@@ -1,4 +1,4 @@
-package com.example.todolist.presentation.mainfragment
+package com.example.todolist.presentation.todos
 
 import android.annotation.SuppressLint
 import android.app.ActionBar.LayoutParams
@@ -23,11 +23,6 @@ class ToDoAdapter(private val listWasUpdated:ListWasUpdated):RecyclerView.Adapte
         if (list == null) return
         listToDo = list.sortedBy { it.deadlineLong }.toMutableList()
         notifyDataSetChanged()
-    }
-
-    fun addData(item: Todo){
-        listToDo.add(0,item)
-        notifyItemInserted(0)
     }
 
     private var isShowSecretTodo:Boolean = false
@@ -63,7 +58,7 @@ class ToDoAdapter(private val listWasUpdated:ListWasUpdated):RecyclerView.Adapte
 
         holder.binding.deadline.apply {
             text = item.deadlineString
-            val timeLeftBeforeDeadline = item.deadlineLong - MainFragment.getCurrentTime()
+            val timeLeftBeforeDeadline = item.deadlineLong - ToDoListFragment.getCurrentTime()
             setTextColor(when{
                 timeLeftBeforeDeadline < 1 -> Color.BLACK                                //deadline was left
                 timeLeftBeforeDeadline > 7889229000 -> Color.GREEN                       //3 month+

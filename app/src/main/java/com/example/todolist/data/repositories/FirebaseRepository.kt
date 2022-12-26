@@ -26,4 +26,6 @@ interface FirebaseRepository {
     suspend fun createNewUserByEmailAndPassword(email: String, password: String): Exception?
     suspend fun updateToDo(todo: Todo, id: String,position:Int): Exception?
     suspend fun createNewToDo(todo: Todo,id:String): Exception?
+    suspend fun createNewNote(note: Note): Exception?
+    suspend fun updateNote(note: Note, position: Int): Exception?
 }

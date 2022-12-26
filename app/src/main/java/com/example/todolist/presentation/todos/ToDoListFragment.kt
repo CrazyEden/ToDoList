@@ -1,4 +1,4 @@
-package com.example.todolist.presentation.mainfragment
+package com.example.todolist.presentation.todos
 
 import android.os.Bundle
 import android.util.Log
@@ -11,20 +11,20 @@ import androidx.fragment.app.viewModels
 import androidx.lifecycle.Lifecycle
 import com.example.todolist.R
 import com.example.todolist.databinding.FragmentMainBinding
-import com.example.todolist.presentation.ShowEditCreateToDo.ShowEditCreateToDoFragment
 import com.example.todolist.presentation.activity.TAG
+import com.example.todolist.presentation.todos.todo.ToDoInfoFragment
 import dagger.hilt.android.AndroidEntryPoint
 import java.util.*
 
 @AndroidEntryPoint
-class MainFragment : Fragment(){
+class ToDoListFragment : Fragment(){
 
     private lateinit var binding: FragmentMainBinding
     private lateinit var adapter: ToDoAdapter
     private lateinit var targetShowingId:String
     private lateinit var targetShowingNick:String
     private lateinit var popupMenu:PopupMenu
-    private val vModel: MainViewModel by viewModels()
+    private val vModel: ToDoListViewModel by viewModels()
     private var isCurrentUserAdmin = false
     private var isCurrentUserAtHerselfPageOrAdmin = false
 
@@ -40,11 +40,11 @@ class MainFragment : Fragment(){
         }
         binding.buttonAddTodo.setOnClickListener {
             val args = bundleOf(
-                ShowEditCreateToDoFragment.ID_KEY to targetShowingId,
+                ToDoInfoFragment.ID_KEY to targetShowingId,
             )
             parentFragmentManager.beginTransaction()
                 .addToBackStack(null)
-                .replace(R.id.container, ShowEditCreateToDoFragment::class.java,args)
+                .replace(R.id.container, ToDoInfoFragment::class.java,args)
                 .commit()
         }
         return binding.root
@@ -105,13 +105,13 @@ class MainFragment : Fragment(){
     private fun initVars(){
         adapter = ToDoAdapter(){ todo,position->
             val args = bundleOf(
-                ShowEditCreateToDoFragment.ID_KEY to targetShowingId,
-                ShowEditCreateToDoFragment.TODO_POSITION_KEY to position,
-                ShowEditCreateToDoFragment.TODO_KEY to todo
+                ToDoInfoFragment.ID_KEY to targetShowingId,
+                ToDoInfoFragment.TODO_POSITION_KEY to position,
+                ToDoInfoFragment.TODO_KEY to todo
             )
             parentFragmentManager.beginTransaction()
                 .addToBackStack(null)
-                .replace(R.id.container, ShowEditCreateToDoFragment::class.java,args)
+                .replace(R.id.container, ToDoInfoFragment::class.java,args)
                 .commit()
         }
         binding.rcView.adapter = adapter

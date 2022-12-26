@@ -1,0 +1,97 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:background="@drawable/frame"
+    android:layout_margin="8dp"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".presentation.todos.todo.ToDoInfoFragment">
+    <androidx.core.widget.NestedScrollView
+        android:id="@+id/todofrScroller"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+        <LinearLayout
+            android:layout_margin="3dp"
+            android:orientation="vertical"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content">
+                <EditText
+                    android:hint="@string/todo_title"
+                    android:textSize="25sp"
+                    android:layout_gravity="center_vertical"
+                    android:id="@+id/title_todo"
+                    android:importantForAutofill="no"
+                    android:imeOptions="actionDone|flagNoFullscreen"
+                    android:inputType="textMultiLine"
+                    android:layout_weight="1"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"/>
+                <ImageView
+                    android:contentDescription="@string/is_todo_secret"
+                    android:id="@+id/icon_secret_todo"
+                    android:src="@drawable/ic_secret_todo"
+                    android:visibility="gone"
+                    tools:visibility="visible"
+                    android:layout_marginTop="15dp"
+                    android:layout_gravity="top"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"/>
+            </LinearLayout>
+
+            <TextView
+                android:id="@+id/deadline"
+                android:layout_gravity="end"
+                android:textSize="25sp"
+                android:textStyle="bold"
+                android:text="@string/to_select_a_deadline"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"/>
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content">
+                <EditText
+                    android:id="@+id/textSubTodo"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:imeOptions="actionDone|flagNoFullscreen"
+                    android:inputType="textMultiLine"
+                    android:importantForAutofill="no"
+                    android:hint="@string/sub_todo" />
+                <androidx.appcompat.widget.AppCompatButton
+                    android:id="@+id/buttonAddSubTodo"
+                    android:text="@string/plus"
+                    android:background="?android:attr/selectableItemBackground"
+                    android:textSize="25sp"
+                    android:layout_width="48dp"
+                    android:layout_height="48dp"/>
+            </LinearLayout>
+
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/rcViewSubTodo"
+                app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
+                tools:listitem="@layout/sub_todo"
+                tools:itemCount="5"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"/>
+
+        </LinearLayout>
+
+    </androidx.core.widget.NestedScrollView>
+
+    <com.google.android.material.floatingactionbutton.FloatingActionButton
+        android:id="@+id/floatButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:contentDescription="@string/description_create_or_update_todo"
+        android:src="@drawable/ic_save"
+        android:layout_gravity="bottom|end"
+        android:layout_margin="10dp"/>
+
+</FrameLayout>

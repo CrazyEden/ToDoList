@@ -1,4 +1,4 @@
-package com.example.todolist.presentation
+package com.example.todolist.presentation.userprofile.settings
 
 import android.graphics.drawable.ColorDrawable
 import android.os.Bundle

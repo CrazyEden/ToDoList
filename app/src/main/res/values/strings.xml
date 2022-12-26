@@ -48,4 +48,8 @@
     <string name="dark_mode">Dark Mode</string>
 
     <string name="hello_blank_fragment">Hello blank fragment</string>
+    <string name="body_note_hint">Текст заметки…</string>
+    <string name="to_select_a_deadline">Выбрать дедлайн</string>
+    <string name="description_create_or_update_the_note">Создать/обновить заметку</string>
+    <string name="description_create_or_update_todo">Создать/обновить задачу</string>
 </resources>

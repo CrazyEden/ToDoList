@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@drawable/frame"
+    android:layout_margin="4dp"
+    tools:context=".presentation.notes.note.NoteInfoFragment">
+    <ScrollView
+        android:id="@+id/notefrScroller"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:layout_margin="4dp">
+
+            <EditText
+                android:id="@+id/note_title_infofr"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:importantForAutofill="no"
+                android:textSize="25sp"
+                android:textStyle="bold"
+                android:gravity="end"
+                android:imeOptions="actionDone|flagNoFullscreen"
+                android:inputType="textMultiLine"
+                android:hint="@string/title_note_hint"/>
+            <EditText
+                android:id="@+id/note_body_infofr"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:importantForAutofill="no"
+                android:imeOptions="actionDone|flagNoFullscreen"
+                android:inputType="textMultiLine"
+                android:hint="@string/body_note_hint" />
+        </LinearLayout>
+    </ScrollView>
+
+
+    <com.google.android.material.floatingactionbutton.FloatingActionButton
+        android:id="@+id/floatButtonNote"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:contentDescription="@string/description_create_or_update_the_note"
+        android:src="@drawable/ic_save"
+        android:layout_gravity="end|bottom"
+        android:layout_margin="10dp"/>
+
+</FrameLayout>

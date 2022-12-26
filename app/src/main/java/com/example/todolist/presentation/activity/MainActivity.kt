@@ -11,11 +11,11 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentManager
 import com.example.todolist.R
 import com.example.todolist.databinding.ActivityMainBinding
-import com.example.todolist.presentation.SettingsFragment
 import com.example.todolist.presentation.auth.SignInFragment
-import com.example.todolist.presentation.mainfragment.MainFragment
-import com.example.todolist.presentation.notefragment.NotesFragment
+import com.example.todolist.presentation.notes.NotesFragment
+import com.example.todolist.presentation.todos.ToDoListFragment
 import com.example.todolist.presentation.userprofile.UserProfileFragment
+import com.example.todolist.presentation.userprofile.settings.SettingsFragment
 import com.example.todolist.utils.NetworkChangeReceiver
 import com.google.firebase.FirebaseApp
 import com.google.firebase.appcheck.FirebaseAppCheck
@@ -38,7 +38,7 @@ class MainActivity : AppCompatActivity(){
         registerEthernetAccessListener()
         binding.bottomNavMenu.setOnItemSelectedListener {
             when(it.itemId){
-                R.id.listTodo_menu->{ openFragment(MainFragment()) }
+                R.id.listTodo_menu->{ openFragment(ToDoListFragment()) }
                 R.id.notes_menu->{ openFragment(NotesFragment()) }
                 R.id.profile_menu->{ openFragment(UserProfileFragment()) }
             }
@@ -46,7 +46,7 @@ class MainActivity : AppCompatActivity(){
         }
         if(savedInstanceState != null) return
         if (vModel.isCurrentUserNull()) openFragment(SignInFragment())
-        else openFragment(MainFragment())
+        else openFragment(ToDoListFragment())
     }
 
     private fun registerEthernetAccessListener() {
@@ -57,7 +57,7 @@ class MainActivity : AppCompatActivity(){
         //auto hide bottom navigation bar
         supportFragmentManager.registerFragmentLifecycleCallbacks(object : FragmentManager.FragmentLifecycleCallbacks(){
             override fun onFragmentViewCreated(fm: FragmentManager, f: Fragment, v: View, savedInstanceState: Bundle?) {
-                if (f is MainFragment ||f is NotesFragment ||f is UserProfileFragment || f is SettingsFragment) {//whitelist
+                if (f is ToDoListFragment ||f is NotesFragment ||f is UserProfileFragment || f is SettingsFragment) {//whitelist
                     binding.bottomNavMenu.visibility = View.VISIBLE
                     supportActionBar?.show()
                 }
@@ -72,7 +72,7 @@ class MainActivity : AppCompatActivity(){
     }
 
     private fun openFragment(fragment: Fragment){
-        if (fragment is MainFragment) binding.bottomNavMenu.visibility = View.VISIBLE
+        if (fragment is ToDoListFragment) binding.bottomNavMenu.visibility = View.VISIBLE
         supportFragmentManager.beginTransaction()
             .replace(R.id.container,fragment)
             .commit()

@@ -1,11 +1,10 @@
-package com.example.todolist.presentation.mainfragment
+package com.example.todolist.presentation.todos
 
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.todolist.data.model.Data
-import com.example.todolist.data.model.Todo
 import com.example.todolist.data.model.UserData
 import com.example.todolist.data.repositories.FirebaseRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -14,7 +13,7 @@ import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
-class MainViewModel @Inject constructor(
+class ToDoListViewModel @Inject constructor(
     private val firebaseRepository: FirebaseRepository
 ):ViewModel() {
 
@@ -46,10 +45,6 @@ class MainViewModel @Inject constructor(
         viewModelScope.launch(Dispatchers.IO) {
             _userDataLiveData.postValue(firebaseRepository.getUserData(id))
         }
-    }
-
-    fun saveData(targetShowingId:String,dataForSave: List<Todo>){
-        firebaseRepository.uploadToDoList(targetShowingId, dataForSave)
     }
 
     val authId = firebaseRepository.getAuthUserUid()

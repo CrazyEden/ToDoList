@@ -1,4 +1,4 @@
-package com.example.todolist.presentation.mainfragment
+package com.example.todolist.presentation.todos
 
 import android.annotation.SuppressLint
 import android.graphics.Color

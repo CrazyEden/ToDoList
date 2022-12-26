@@ -10,7 +10,7 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import com.example.todolist.R
 import com.example.todolist.databinding.FragmentSignInByLoginBinding
-import com.example.todolist.presentation.mainfragment.MainFragment
+import com.example.todolist.presentation.todos.ToDoListFragment
 import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint
@@ -41,7 +41,7 @@ class SignInByLoginFragment : Fragment() {
         vModel.signInWithEmailAndPassword.observe(viewLifecycleOwner){
             if (it==null){
                 parentFragmentManager.beginTransaction()
-                    .replace(R.id.container,MainFragment())
+                    .replace(R.id.container,ToDoListFragment())
                     .commit()
             } else showLongToast(getString(R.string.sign_in_failed))
         }
