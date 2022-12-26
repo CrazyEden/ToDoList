@@ -76,7 +76,8 @@ class ToDoInfoFragment : Fragment() {
             binding.deadline.text = todo.deadlineString
             updateDeadlineColor()
         }
-
+        if(todo.isCompleted)
+            binding.iconTodoCompleted.visibility =View.VISIBLE
         if (todo.secretToDo)
             binding.iconSecretTodo.visibility = View.VISIBLE
 
@@ -104,15 +105,16 @@ class ToDoInfoFragment : Fragment() {
     private fun inflateRecyclerView() {
         val adapter = SubTodoAdapter{ it ->
             todo.isCompleted = it.all { it.isCompleted }
+            binding.iconTodoCompleted.visibility =
+                if (todo.isCompleted)View.VISIBLE else View.GONE
             todo.subTodo = it
         }
-        binding.rcViewSubTodo.adapter = adapter
+        binding.rcViewSubToDoInfoFragment.adapter = adapter
         adapter.setData(todo.subTodo)
         binding.buttonAddSubTodo.setOnClickListener {
             val text = binding.textSubTodo.text.toString()
             if (text.isEmpty()) return@setOnClickListener
             adapter.addData(SubTodo(text))
-            todo.subTodo.add(SubTodo(text))
             binding.textSubTodo.text.clear()
             binding.textSubTodo.clearFocus()
         }

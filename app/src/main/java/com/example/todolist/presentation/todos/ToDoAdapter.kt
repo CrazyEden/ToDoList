@@ -12,9 +12,8 @@ import com.example.todolist.data.model.Todo
 import com.example.todolist.databinding.ItemTodoBinding
 import com.example.todolist.presentation.activity.TAG
 
-typealias ListWasUpdated = (todo:Todo,position:Int) -> Unit
 
-class ToDoAdapter(private val listWasUpdated:ListWasUpdated):RecyclerView.Adapter<ToDoAdapter.ToDoViewHolder>() {
+class ToDoAdapter(private val toDoArgs: ToDoArgs):RecyclerView.Adapter<ToDoAdapter.ToDoViewHolder>() {
     class ToDoViewHolder(val binding:ItemTodoBinding):RecyclerView.ViewHolder(binding.root)
 
     private var listToDo = mutableListOf<Todo>()
@@ -22,7 +21,24 @@ class ToDoAdapter(private val listWasUpdated:ListWasUpdated):RecyclerView.Adapte
     fun setData(list:List<Todo>?){
         if (list == null) return
         listToDo = list.sortedBy { it.deadlineLong }.toMutableList()
+        toDoArgs.listWasUpdated(listToDo)
         notifyDataSetChanged()
+    }
+
+    fun getItem(position: Int) =
+        listToDo[position]
+
+    fun addItem(position: Int,todo:Todo){
+        listToDo.add(position,todo)
+        notifyItemInserted(position)
+        toDoArgs.listWasUpdated(listToDo)
+    }
+
+    fun removeItem(position: Int){
+        listToDo.removeAt(position)
+        notifyItemRemoved(position)
+        notifyItemRangeChanged(position, listToDo.size)
+        toDoArgs.listWasUpdated(listToDo)
     }
 
     private var isShowSecretTodo:Boolean = false
@@ -48,11 +64,25 @@ class ToDoAdapter(private val listWasUpdated:ListWasUpdated):RecyclerView.Adapte
         }
 
         if(item.secretToDo) holder.binding.iconSecretTodo.visibility = View.VISIBLE
-
+        if (item.isCompleted)
+            holder.binding.iconTodoCompleted.visibility = View.VISIBLE
+        val adapter = SubTodoAdapter(){it->
+            if (it.all { it.isCompleted }) {
+                listToDo[position].isCompleted = true
+                holder.binding.iconTodoCompleted.visibility = View.VISIBLE
+            }else{
+                listToDo[position].isCompleted = false
+                holder.binding.iconTodoCompleted.visibility = View.GONE
+            }
+            listToDo[position].subTodo = it
+            toDoArgs.itemWasUpdated(listToDo[position],position)
+        }
+        adapter.setData(item.subTodo)
+        holder.binding.rcViewSubTodo.adapter = adapter
 
         holder.binding.titleTodo.apply {
             text = item.titleToDo
-            setOnClickListener { listWasUpdated(item,position) }
+            setOnClickListener { toDoArgs.openToDoItem(item,position) }
         }
 
 

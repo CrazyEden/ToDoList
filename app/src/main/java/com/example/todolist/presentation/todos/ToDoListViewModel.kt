@@ -5,6 +5,7 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.todolist.data.model.Data
+import com.example.todolist.data.model.Todo
 import com.example.todolist.data.model.UserData
 import com.example.todolist.data.repositories.FirebaseRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -49,8 +50,17 @@ class ToDoListViewModel @Inject constructor(
 
     val authId = firebaseRepository.getAuthUserUid()
 
+    fun updateTodo(todo: Todo, id: String, position: Int){
+        viewModelScope.launch {
+            firebaseRepository.updateToDo(todo, id, position)
+        }
+    }
     override fun onCleared() {
         firebaseRepository.destroyToDoListener()
         super.onCleared()
+    }
+
+    fun updateList(id:String,list: MutableList<Todo>) {
+        firebaseRepository.uploadToDoList(id,list)
     }
 }

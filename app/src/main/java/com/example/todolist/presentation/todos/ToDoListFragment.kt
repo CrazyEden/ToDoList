@@ -9,17 +9,21 @@ import androidx.core.view.MenuProvider
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.Lifecycle
+import androidx.recyclerview.widget.ItemTouchHelper
+import androidx.recyclerview.widget.RecyclerView
 import com.example.todolist.R
-import com.example.todolist.databinding.FragmentMainBinding
+import com.example.todolist.data.model.Todo
+import com.example.todolist.databinding.FragmentTodosBinding
 import com.example.todolist.presentation.activity.TAG
 import com.example.todolist.presentation.todos.todo.ToDoInfoFragment
+import com.google.android.material.snackbar.Snackbar
 import dagger.hilt.android.AndroidEntryPoint
 import java.util.*
 
 @AndroidEntryPoint
-class ToDoListFragment : Fragment(){
+class ToDoListFragment : Fragment(), ToDoArgs {
 
-    private lateinit var binding: FragmentMainBinding
+    private lateinit var binding: FragmentTodosBinding
     private lateinit var adapter: ToDoAdapter
     private lateinit var targetShowingId:String
     private lateinit var targetShowingNick:String
@@ -29,7 +33,7 @@ class ToDoListFragment : Fragment(){
     private var isCurrentUserAtHerselfPageOrAdmin = false
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
-        binding = FragmentMainBinding.inflate(inflater, container, false)
+        binding = FragmentTodosBinding.inflate(inflater, container, false)
         initVars()
         inflateToolbarMenu()
         initViewModelObservers()
@@ -46,6 +50,10 @@ class ToDoListFragment : Fragment(){
                 .addToBackStack(null)
                 .replace(R.id.container, ToDoInfoFragment::class.java,args)
                 .commit()
+        }
+        binding.buttonAddTodo.setOnLongClickListener {
+            adapter.addItem(1,Todo())
+            true
         }
         return binding.root
     }
@@ -103,18 +111,9 @@ class ToDoListFragment : Fragment(){
     private var mapOfNicknamesAndIds:MutableMap<String,String> = mutableMapOf()
 
     private fun initVars(){
-        adapter = ToDoAdapter(){ todo,position->
-            val args = bundleOf(
-                ToDoInfoFragment.ID_KEY to targetShowingId,
-                ToDoInfoFragment.TODO_POSITION_KEY to position,
-                ToDoInfoFragment.TODO_KEY to todo
-            )
-            parentFragmentManager.beginTransaction()
-                .addToBackStack(null)
-                .replace(R.id.container, ToDoInfoFragment::class.java,args)
-                .commit()
-        }
+        adapter = ToDoAdapter(this)
         binding.rcView.adapter = adapter
+        initRcViewSwipe()
         targetShowingId = vModel.authId
 
         popupMenu = PopupMenu(context,binding.buttonAddTodo)
@@ -129,8 +128,45 @@ class ToDoListFragment : Fragment(){
             true
         }
     }
+    private fun initRcViewSwipe(){
+        ItemTouchHelper(object : ItemTouchHelper.SimpleCallback(0, ItemTouchHelper.LEFT){
+            override fun onMove(recyclerView: RecyclerView, viewHolder: RecyclerView.ViewHolder, target: RecyclerView.ViewHolder) = false
+
+            override fun onSwiped(viewHolder: RecyclerView.ViewHolder, direction: Int) {
+                val position = viewHolder.layoutPosition
+                val item = adapter.getItem(position)
+                if (direction != ItemTouchHelper.LEFT) return
+                adapter.removeItem(position)
+                Snackbar.make(binding.rcView,"xdd", Snackbar.LENGTH_LONG)
+                    .setAction(R.string.cancel){ adapter.addItem(position,item) }
+                    .show()
+            }
+        }).attachToRecyclerView(binding.rcView)
+    }
 
     companion object{
         fun getCurrentTime() = Calendar.getInstance().time.time
     }
+
+    /*ToDoArgs*/
+    override fun itemWasUpdated(todo: Todo, position: Int) {
+        vModel.updateTodo(todo = todo,id = targetShowingId, position = position)
+    }
+
+    override fun openToDoItem(todo: Todo, position: Int) {
+        val args = bundleOf(
+            ToDoInfoFragment.ID_KEY to targetShowingId,
+            ToDoInfoFragment.TODO_POSITION_KEY to position,
+            ToDoInfoFragment.TODO_KEY to todo
+        )
+        parentFragmentManager.beginTransaction()
+            .addToBackStack(null)
+            .replace(R.id.container, ToDoInfoFragment::class.java,args)
+            .commit()
+    }
+
+    override fun listWasUpdated(list: MutableList<Todo>) {
+        vModel.updateList(targetShowingId,list)
+    }
+    /*ToDoArgs*/
 }

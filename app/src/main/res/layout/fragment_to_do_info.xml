@@ -18,40 +18,51 @@
             android:orientation="vertical"
             android:layout_width="match_parent"
             android:layout_height="wrap_content">
+
+            <EditText
+                android:hint="@string/todo_title"
+                android:textSize="25sp"
+                android:layout_gravity="center_vertical"
+                android:id="@+id/title_todo"
+                android:importantForAutofill="no"
+                android:imeOptions="actionDone|flagNoFullscreen"
+                android:inputType="textMultiLine"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"/>
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content">
-                <EditText
-                    android:hint="@string/todo_title"
-                    android:textSize="25sp"
-                    android:layout_gravity="center_vertical"
-                    android:id="@+id/title_todo"
-                    android:importantForAutofill="no"
-                    android:imeOptions="actionDone|flagNoFullscreen"
-                    android:inputType="textMultiLine"
-                    android:layout_weight="1"
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"/>
                 <ImageView
                     android:contentDescription="@string/is_todo_secret"
                     android:id="@+id/icon_secret_todo"
                     android:src="@drawable/ic_secret_todo"
+                    android:layout_gravity="center"
                     android:visibility="gone"
                     tools:visibility="visible"
-                    android:layout_marginTop="15dp"
-                    android:layout_gravity="top"
                     android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"/>
+                <ImageView
+                    android:contentDescription="@string/is_todo_completed"
+                    android:id="@+id/icon_todo_completed"
+                    android:src="@drawable/ic_check"
+                    android:visibility="gone"
+                    tools:visibility="visible"
+                    android:layout_gravity="center"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"/>
+
+                <TextView
+                    android:id="@+id/deadline"
+                    android:gravity="end"
+                    android:textSize="25sp"
+                    android:textStyle="bold"
+                    android:text="@string/to_select_a_deadline"
+                    android:layout_weight="1"
+                    android:layout_width="0dp"
                     android:layout_height="wrap_content"/>
             </LinearLayout>
 
-            <TextView
-                android:id="@+id/deadline"
-                android:layout_gravity="end"
-                android:textSize="25sp"
-                android:textStyle="bold"
-                android:text="@string/to_select_a_deadline"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"/>
+
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content">
@@ -74,10 +85,11 @@
             </LinearLayout>
 
             <androidx.recyclerview.widget.RecyclerView
-                android:id="@+id/rcViewSubTodo"
+                android:id="@+id/rcViewSubToDoInfoFragment"
                 app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
                 tools:listitem="@layout/sub_todo"
                 tools:itemCount="5"
+                android:nestedScrollingEnabled="false"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"/>
 
