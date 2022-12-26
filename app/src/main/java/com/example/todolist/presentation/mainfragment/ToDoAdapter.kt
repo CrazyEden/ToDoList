@@ -7,18 +7,14 @@ import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.view.inputmethod.EditorInfo
-import android.widget.PopupMenu
 import androidx.recyclerview.widget.RecyclerView
-import com.example.todolist.R
-import com.example.todolist.data.model.SubTodo
 import com.example.todolist.data.model.Todo
 import com.example.todolist.databinding.ItemTodoBinding
 import com.example.todolist.presentation.activity.TAG
 
-typealias ListWasUpdated = (list:MutableList<Todo>) -> Unit
+typealias ListWasUpdated = (todo:Todo,position:Int) -> Unit
 
-class ToDoAdapter(private val listWasUpdated: ListWasUpdated):RecyclerView.Adapter<ToDoAdapter.ToDoViewHolder>() {
+class ToDoAdapter(private val listWasUpdated:ListWasUpdated):RecyclerView.Adapter<ToDoAdapter.ToDoViewHolder>() {
     class ToDoViewHolder(val binding:ItemTodoBinding):RecyclerView.ViewHolder(binding.root)
 
     private var listToDo = mutableListOf<Todo>()
@@ -58,46 +54,12 @@ class ToDoAdapter(private val listWasUpdated: ListWasUpdated):RecyclerView.Adapt
 
         if(item.secretToDo) holder.binding.iconSecretTodo.visibility = View.VISIBLE
 
-        val subTodoAdapter = SubTodoAdapter{ it ->
-            listToDo[position].subTodo = it
-            Log.i(TAG, "list was updated. cause:subTodo")
-            listToDo[position].isCompleted = it.all { it.isCompleted }
-            listWasUpdated(listToDo)
-        }
-        holder.binding.rcViewSubTodo.adapter = subTodoAdapter
-        subTodoAdapter.setData(item.subTodo)
 
-        holder.binding.buttonAddSubTodo.setOnClickListener {
-            val subStr = holder.binding.textSubTodo.text.toString()
-            if (subStr.isEmpty()) return@setOnClickListener
-            holder.binding.textSubTodo.apply {
-                text.clear()
-                onEditorAction(EditorInfo.IME_ACTION_DONE)
-                clearFocus()
-            }
-            item.subTodo?.add(SubTodo(string = subStr))
-            listWasUpdated(listToDo)
-            subTodoAdapter.addData(SubTodo(string = subStr))
+        holder.binding.titleTodo.apply {
+            text = item.titleToDo
+            setOnClickListener { listWasUpdated(item,position) }
         }
 
-        holder.binding.titleTodo.text = item.titleToDo
-
-        holder.binding.titleTodo.setOnLongClickListener { view ->
-            val popupMenu = PopupMenu(holder.itemView.context,view)
-            popupMenu.menu.add(holder.itemView.context.getString(R.string.delete))
-            popupMenu.setOnMenuItemClickListener {
-                if (it.itemId == 0) {
-                    Log.i(TAG, "removed item ToDo at position $position")
-                    listToDo.removeAt(position)
-                    notifyItemRemoved(position)
-                    notifyItemRangeChanged(position, listToDo.size)
-                    listWasUpdated(listToDo)
-                }
-                true
-            }
-            popupMenu.show()
-            true
-        }
 
         holder.binding.deadline.apply {
             text = item.deadlineString

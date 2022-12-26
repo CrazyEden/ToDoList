@@ -63,10 +63,7 @@ class FirebaseRepositoryImpl @Inject constructor(
     private var obj2: ValueEventListener? = null
     private var pastId: String? = null
     override fun createToDoObserver(id:String, dataObserver: DataObserver){
-        if (obj2 != null && pastId != null){
-            database.getReference("data").child(pastId!!).removeEventListener(obj2!!)
-            Log.i(TAG,"data observer was removed for id \"$pastId\"")
-        }
+        destroyToDoListener()
         pastId = id
 
         database.getReference("data").child(id).addValueEventListener(object : ValueEventListener {
@@ -83,12 +80,12 @@ class FirebaseRepositoryImpl @Inject constructor(
             }
         })
     }
-     override fun destroyToDoListener(){
-         if (obj2 != null && pastId != null){
-             Log.i(TAG,"data observer was removed for id \"$pastId\"")
-             database.getReference("data").child(pastId!!).removeEventListener(obj2!!)
-         }
-     }
+    override fun destroyToDoListener(){
+        if (obj2 != null && pastId != null){
+            Log.i(TAG,"data observer was removed for id \"$pastId\"")
+            database.getReference("data").child(pastId!!).removeEventListener(obj2!!)
+        }
+    }
 
     override suspend fun signInByGoogle(credential: AuthCredential): Exception? {
         val authResult = auth.signInWithCredential(credential)
@@ -122,5 +119,28 @@ class FirebaseRepositoryImpl @Inject constructor(
         user.await()
         return if (user.isSuccessful) null
         else user.exception
+    }
+
+    override suspend fun updateToDo(todo: Todo, id: String,position:Int): Exception? {
+        val res = database.getReference("data").child(id)
+            .child("listTodo").child(position.toString())
+            .setValue(todo)
+        res.await()
+        return if (res.isSuccessful) null
+        else res.exception
+    }
+
+    private suspend fun getLightTodoList(id:String)=
+        database.getReference("data").child(id).child("listTodo")
+            .get().await().children.count()
+
+
+    override suspend fun createNewToDo(todo: Todo,id:String): Exception? {
+        val position = getLightTodoList(id)
+        val res = database.getReference("data").child(id)
+            .child("listTodo").child(position.toString()).setValue(todo)
+        res.await()
+        return if (res.isSuccessful) null
+        else res.exception
     }
 }

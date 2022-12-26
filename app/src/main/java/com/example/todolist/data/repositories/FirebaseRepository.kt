@@ -24,4 +24,6 @@ interface FirebaseRepository {
     suspend fun signInWithEmailAndPassword(email: String, password: String): Exception?
     fun sendEmailToRestPassword(email:String)
     suspend fun createNewUserByEmailAndPassword(email: String, password: String): Exception?
+    suspend fun updateToDo(todo: Todo, id: String,position:Int): Exception?
+    suspend fun createNewToDo(todo: Todo,id:String): Exception?
 }

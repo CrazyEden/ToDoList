@@ -4,9 +4,9 @@
     <string name="google">Google</string>
     <string name="Email">Email</string>
     <string name="notes">Заметки</string>
-    <string name="sub_todo">Добавить ToDo</string>
+    <string name="sub_todo">Добавить задачу</string>
     <string name="is_todo_secret">ToDo секретная</string>
-    <string name="todo_title">Название ToDo</string>
+    <string name="todo_title">Название задачи</string>
     <string name="plus">+</string>
     <string name="cancel">Отмена</string>
     <string name="create">Создать</string>
@@ -39,11 +39,13 @@
     <string name="passwords_dont_match">Пароли не совпадают</string>
     <string name="title_note_hint">Название заметки</string>
     <string name="profile_menu">Профиль</string>
-    <string name="todo_list_menu">Список ToDo</string>
+    <string name="todo_list_menu">Список задач</string>
     <string name="no_ethernet">Нет интернета</string>
     <string name="error">Что-то пошло не так</string>
     <string name="a_sign_in">Вход</string>
     <string name="or">или</string>
     <string name="welcome_to_todolist">Добро пожаловть в ToDo лист</string>
     <string name="dark_mode">Dark Mode</string>
+
+    <string name="hello_blank_fragment">Hello blank fragment</string>
 </resources>

@@ -1,23 +1,19 @@
 package com.example.todolist.presentation.mainfragment
 
-import android.app.AlertDialog
-import android.app.DatePickerDialog
-import android.app.TimePickerDialog
 import android.os.Bundle
 import android.util.Log
 import android.view.*
 import android.widget.PopupMenu
+import androidx.core.os.bundleOf
 import androidx.core.view.MenuProvider
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.Lifecycle
 import com.example.todolist.R
-import com.example.todolist.data.model.Todo
-import com.example.todolist.databinding.DialogCreateNewTodoBinding
 import com.example.todolist.databinding.FragmentMainBinding
+import com.example.todolist.presentation.ShowEditCreateToDo.ShowEditCreateToDoFragment
 import com.example.todolist.presentation.activity.TAG
 import dagger.hilt.android.AndroidEntryPoint
-import java.text.SimpleDateFormat
 import java.util.*
 
 @AndroidEntryPoint
@@ -43,7 +39,13 @@ class MainFragment : Fragment(){
             else binding.buttonAddTodo.show()
         }
         binding.buttonAddTodo.setOnClickListener {
-            openDialogToCreateNewTodo()
+            val args = bundleOf(
+                ShowEditCreateToDoFragment.ID_KEY to targetShowingId,
+            )
+            parentFragmentManager.beginTransaction()
+                .addToBackStack(null)
+                .replace(R.id.container, ShowEditCreateToDoFragment::class.java,args)
+                .commit()
         }
         return binding.root
     }
@@ -99,56 +101,19 @@ class MainFragment : Fragment(){
         vModel.coldLoad(targetShowingId)
     }
     private var mapOfNicknamesAndIds:MutableMap<String,String> = mutableMapOf()
-    private fun openDialogToCreateNewTodo() {
-        val dialogBinding = DialogCreateNewTodoBinding.inflate(layoutInflater)
-        if (isCurrentUserAdmin) dialogBinding.dialogCheckbox.visibility = View.VISIBLE
-        dialogBinding.buttonPickData.setOnClickListener {
-            openDialogPickDatetimeForDialogCreateNewTodo(dialogBinding)
-        }
-        AlertDialog.Builder(context)
-            .setView(dialogBinding.root)
-            .setPositiveButton(R.string.create) { _, _ ->
-                val alertText = dialogBinding.dialogTextView.text.toString()
-                if (alertText.isEmpty()) return@setPositiveButton
-                val timeStr = dialogBinding.textViewDatetime.text.toString()
-                if (timeStr.isEmpty()) return@setPositiveButton
-                val alertIsTodoSecret = dialogBinding.dialogCheckbox.isChecked
-                val time = dialogBinding.textViewDatetime.tag as Long
-
-                Log.i(TAG,"created new todo, String = \"$alertText\" | isToDoSecret = \"$alertIsTodoSecret\" | deadline todo = \"$timeStr\"")
-                adapter.addData(Todo(
-                    titleToDo = alertText,
-                    secretToDo = alertIsTodoSecret,
-                    deadlineLong = time,
-                    deadlineString = timeStr
-                ))
-                uploadDataToFirebase()
-            }
-            .setNegativeButton(getString(R.string.cancel)){ _, _ -> }
-            .setTitle(R.string.create_new_todo)
-            .show()
-    }
-    private fun openDialogPickDatetimeForDialogCreateNewTodo(dialogBinding:DialogCreateNewTodoBinding){
-        DatePickerDialog(requireContext(),{ _, year, monthOfYear, dayOfMonth ->
-            val day = "$dayOfMonth.${monthOfYear + 1}.$year" // "day.month.year | 31.12.2022"
-            openTimePickDialog(dialogBinding,day)
-        }, 2022, 11, 1).show()
-    }
-    private fun openTimePickDialog(dialogBinding:DialogCreateNewTodoBinding,day:String){
-        TimePickerDialog(context,{_,hour,minutes->
-            val format = SimpleDateFormat("dd.MM.yyyy HH:mm", Locale("ru"))
-            val dateStr = "$day $hour:$minutes" // 31.12.2022 23:59
-            val timeAsLong = format.parse(dateStr)?.time!! //"31.12.2022 23:59" converting to Long "1672520340000"
-            Log.wtf(TAG,"picked datetime \"$dateStr\" | Long \"$timeAsLong\"")
-            dialogBinding.textViewDatetime.text = dateStr   // text will using for ToDо.deadlineString
-            dialogBinding.textViewDatetime.tag = timeAsLong // tag will using for ToDо.deadlineLong
-        },0,0,true).show()
-    }
-
-
 
     private fun initVars(){
-        adapter = ToDoAdapter(){ uploadDataToFirebase() }
+        adapter = ToDoAdapter(){ todo,position->
+            val args = bundleOf(
+                ShowEditCreateToDoFragment.ID_KEY to targetShowingId,
+                ShowEditCreateToDoFragment.TODO_POSITION_KEY to position,
+                ShowEditCreateToDoFragment.TODO_KEY to todo
+            )
+            parentFragmentManager.beginTransaction()
+                .addToBackStack(null)
+                .replace(R.id.container, ShowEditCreateToDoFragment::class.java,args)
+                .commit()
+        }
         binding.rcView.adapter = adapter
         targetShowingId = vModel.authId
 
@@ -163,10 +128,6 @@ class MainFragment : Fragment(){
             vModel.createToDoObserver(key)
             true
         }
-    }
-
-    private fun uploadDataToFirebase(){
-        vModel.saveData(targetShowingId,adapter.getRawList())
     }
 
     companion object{
