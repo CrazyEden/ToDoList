@@ -18,6 +18,7 @@ import com.example.todolist.data.model.SubTodo
 import com.example.todolist.data.model.Todo
 import com.example.todolist.databinding.FragmentToDoInfoBinding
 import com.example.todolist.presentation.activity.TAG
+import com.example.todolist.presentation.todos.CommentsAdapter
 import com.example.todolist.presentation.todos.SubTodoAdapter
 import com.example.todolist.presentation.todos.ToDoListFragment
 import dagger.hilt.android.AndroidEntryPoint
@@ -115,8 +116,19 @@ class ToDoInfoFragment : Fragment() {
             val text = binding.textSubTodo.text.toString()
             if (text.isEmpty()) return@setOnClickListener
             adapter.addData(SubTodo(text))
+            todo.subTodo.add(SubTodo(text))
             binding.textSubTodo.text.clear()
             binding.textSubTodo.clearFocus()
+        }
+
+        val commentsAdapter = CommentsAdapter(todo.comments,true)
+        binding.commentsLV.adapter = commentsAdapter
+        binding.buttonAddComment.setOnClickListener {
+            val text = binding.textComment.text.toString()
+            if (text.isEmpty()) return@setOnClickListener
+            commentsAdapter.addComment(text)
+            binding.textComment.text.clear()
+            binding.textComment.clearFocus()
         }
     }
 

@@ -9,6 +9,7 @@ data class Todo(
     var secretToDo: Boolean = false,
     var isCompleted:Boolean = false,
     var subTodo: MutableList<SubTodo> = mutableListOf(),
+    var comments: MutableList<String> = mutableListOf(),
     var deadlineLong: Long = 0,
     var deadlineString: String = ""
 ): Parcelable

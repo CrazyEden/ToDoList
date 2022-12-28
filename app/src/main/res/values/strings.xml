@@ -53,4 +53,6 @@
     <string name="description_create_or_update_the_note">Создать/обновить заметку</string>
     <string name="description_create_or_update_todo">Создать/обновить задачу</string>
     <string name="is_todo_completed">Задача выполнена</string>
+    <string name="add_comment">Добавить комментарий</string>
+    <string name="___comments___">------Комментарии------</string>
 </resources>

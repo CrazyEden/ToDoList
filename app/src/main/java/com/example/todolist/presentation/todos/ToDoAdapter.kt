@@ -80,6 +80,9 @@ class ToDoAdapter(private val toDoArgs: ToDoArgs):RecyclerView.Adapter<ToDoAdapt
         adapter.setData(item.subTodo)
         holder.binding.rcViewSubTodo.adapter = adapter
 
+        val commentsAdapter = CommentsAdapter(item.comments)
+        holder.binding.commentsListView.adapter = commentsAdapter
+
         holder.binding.titleTodo.apply {
             text = item.titleToDo
             setOnClickListener { toDoArgs.openToDoItem(item,position) }
