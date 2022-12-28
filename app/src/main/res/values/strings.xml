@@ -56,4 +56,10 @@
     <string name="add_comment">Добавить комментарий</string>
     <string name="___comments___">------Комментарии------</string>
     <string name="changing_todo_visibility">Изменение видимости задачи</string>
+    <string name="you_havent_nickname">У вас не установлено имя</string>
+    <string name="count_of_notes">Колличество заметок:</string>
+    <string name="count_of_todo_in_progress">Колличество задач в работе:</string>
+    <string name="count_of_ended_todo">Колличество выполненных задач:</string>
+    <string name="count_of_todo">Колличество ваших задач:</string>
+    <string name="fields_should_be_not_empty">Поля не могут быть пустыми</string>
 </resources>

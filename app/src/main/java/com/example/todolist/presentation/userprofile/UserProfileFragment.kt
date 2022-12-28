@@ -24,17 +24,17 @@ class UserProfileFragment : Fragment() {
     ): View {
         binding = FragmentUserProfileBinding.inflate(inflater,container,false)
         vModel.myDataLiveData.observe(viewLifecycleOwner){it->
-            val countOfTodos = "Колличество ваших задач: ${it?.listTodo?.size}"
+            val countOfTodos = getString(R.string.count_of_todo) + " ${it?.listTodo?.size}"
             binding.countOfToDos.text = countOfTodos
             var endedTodo = 0
             it?.listTodo?.forEach { if (it.isCompleted) endedTodo++ }
-            val endedTodoStr = "Колличество выполненных: $endedTodo"
+            val endedTodoStr = getString(R.string.count_of_ended_todo) + " $endedTodo"
             binding.countOfEndedToDos.text = endedTodoStr
             val toDoInWork = it?.listTodo?.size?.minus(endedTodo) ?: 0
-            val toDoInWorkStr = "Колличество задач в работе: $toDoInWork"
+            val toDoInWorkStr = getString(R.string.count_of_todo_in_progress)+" $toDoInWork"
             binding.countOfToDosInWork.text = toDoInWorkStr
-            binding.userNickName.text = it?.userData?.nickname ?: "У вас не установлено имя"
-            val countNotes = "Колличество заметок: ${it?.listNotes?.size}"
+            binding.userNickName.text = it?.userData?.nickname ?: getString(R.string.you_havent_nickname)
+            val countNotes = getString(R.string.count_of_notes) + " ${it?.listNotes?.size}"
             binding.countOfNotes.text = countNotes
         }
         binding.buttonSignOut.setOnClickListener {
@@ -52,7 +52,7 @@ class UserProfileFragment : Fragment() {
         binding.userNickName.setOnClickListener {
             val dialogChangeNicknameBinding = DialogChangeNicknameBinding.inflate(layoutInflater)
             val oldNick = binding.userNickName.text
-            if (oldNick != "У вас не установлео имя")
+            if (oldNick != getString(R.string.you_havent_nickname))
                 dialogChangeNicknameBinding.nicknameEditTextView.setText(oldNick)
             AlertDialog.Builder(context)
                 .setView(dialogChangeNicknameBinding.root)

@@ -14,7 +14,6 @@ import com.example.todolist.R
 import com.example.todolist.data.model.Note
 import com.example.todolist.databinding.FragmentNoteInfoBinding
 import com.example.todolist.presentation.activity.TAG
-import com.example.todolist.presentation.notes.NotesFragment
 import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint
@@ -41,11 +40,9 @@ class NoteInfoFragment : Fragment() {
 
         vModel.noteUpdateLiveData.observe(viewLifecycleOwner){
             if (it==null)
-                parentFragmentManager.beginTransaction()
-                    .replace(R.id.container,NotesFragment())
-                    .commit()
+                parentFragmentManager.popBackStack()
             else
-                Log.w(TAG, "noteUpdateLiveData: ", it)
+                Log.wtf(TAG, "noteUpdateLiveData: ", it)
         }
 
         return binding.root
@@ -78,7 +75,7 @@ class NoteInfoFragment : Fragment() {
 
         binding.floatButtonNote.setOnClickListener {
             if (note.title.isEmpty() || note.body.isEmpty())
-                return@setOnClickListener Toast.makeText(context,"Поля не могут быть пустыми",Toast.LENGTH_LONG).show()
+                return@setOnClickListener Toast.makeText(context,getString(R.string.fields_should_be_not_empty),Toast.LENGTH_LONG).show()
             if (position==null)
                 vModel.createNewNote(note)
             else vModel.updateNote(note, position!!)

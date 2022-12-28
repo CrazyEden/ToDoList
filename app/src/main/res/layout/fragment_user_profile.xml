@@ -6,16 +6,18 @@
     android:layout_gravity="center"
     android:gravity="center"
     android:layout_width="match_parent"
-    android:layout_height="wrap_content"
+    android:layout_height="match_parent"
     tools:context=".presentation.userprofile.UserProfileFragment">
+
     <TextView
         android:id="@+id/userNickName"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_margin="4dp"
         android:background="@drawable/frame"
+        android:gravity="center_horizontal"
         android:padding="8dp"
-        tools:text="userNickName"
+        android:text="@string/you_havent_nickname"
         android:textSize="24sp" />
 
     <TextView
@@ -24,8 +26,9 @@
         android:layout_height="wrap_content"
         android:layout_margin="4dp"
         android:background="@drawable/frame"
+        android:gravity="center_horizontal"
         android:padding="8dp"
-        tools:text="countOfToDos"
+        android:text="@string/count_of_todo"
         android:textSize="24sp" />
 
     <TextView
@@ -34,8 +37,9 @@
         android:layout_height="wrap_content"
         android:layout_margin="4dp"
         android:background="@drawable/frame"
+        android:gravity="center_horizontal"
         android:padding="8dp"
-        tools:text="countOfNotes"
+        android:text="@string/count_of_notes"
         android:textSize="24sp" />
 
     <TextView
@@ -44,8 +48,9 @@
         android:layout_height="wrap_content"
         android:layout_margin="4dp"
         android:background="@drawable/frame"
+        android:gravity="center_horizontal"
         android:padding="8dp"
-        tools:text="countOfEndedToDos"
+        android:text="@string/count_of_ended_todo"
         android:textSize="24sp" />
 
     <TextView
@@ -54,8 +59,9 @@
         android:layout_height="wrap_content"
         android:layout_margin="4dp"
         android:background="@drawable/frame"
+        android:gravity="center_horizontal"
         android:padding="8dp"
-        tools:text="countOfToDosInWork"
+        android:text="@string/count_of_todo_in_progress"
         android:textSize="24sp" />
 
     <androidx.appcompat.widget.AppCompatButton

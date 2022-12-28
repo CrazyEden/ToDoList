@@ -21,7 +21,6 @@ class ToDoAdapter(private val toDoArgs: ToDoArgs):RecyclerView.Adapter<ToDoAdapt
     fun setData(list:List<Todo>?){
         if (list == null) return
         listToDo = list.sortedBy { it.deadlineLong }.toMutableList()
-        toDoArgs.listWasUpdated(listToDo)
         notifyDataSetChanged()
     }
 
@@ -61,11 +60,17 @@ class ToDoAdapter(private val toDoArgs: ToDoArgs):RecyclerView.Adapter<ToDoAdapt
             holder.binding.root.layoutParams = LayoutParams(0,0)
             Log.i(TAG,"item was hide & wasn't inflated, position \"$position\"")
             return
+        }else{
+            holder.binding.root.visibility = View.VISIBLE
+            holder.binding.root.layoutParams = LayoutParams(LayoutParams.MATCH_PARENT,LayoutParams.WRAP_CONTENT)
         }
 
         if(item.secretToDo) holder.binding.iconSecretTodo.visibility = View.VISIBLE
-        if (item.isCompleted)
-            holder.binding.iconTodoCompleted.visibility = View.VISIBLE
+        else holder.binding.iconSecretTodo.visibility = View.GONE
+
+        if (item.isCompleted) holder.binding.iconTodoCompleted.visibility = View.VISIBLE
+        else holder.binding.iconTodoCompleted.visibility = View.GONE
+
         val adapter = SubTodoAdapter(){it->
             if (it.all { it.isCompleted }) {
                 listToDo[position].isCompleted = true
@@ -80,8 +85,8 @@ class ToDoAdapter(private val toDoArgs: ToDoArgs):RecyclerView.Adapter<ToDoAdapt
         adapter.setData(item.subTodo)
         holder.binding.rcViewSubTodo.adapter = adapter
 
-        val commentsAdapter = CommentsAdapter(item.comments)
-        holder.binding.commentsListView.adapter = commentsAdapter
+
+        holder.binding.commentsListView.adapter = CommentsAdapter(item.comments)
 
         holder.binding.titleTodo.apply {
             text = item.titleToDo

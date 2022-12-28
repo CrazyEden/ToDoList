@@ -26,17 +26,25 @@ class ToDoListFragment : Fragment(), ToDoArgs {
     private lateinit var binding: FragmentTodosBinding
     private lateinit var adapter: ToDoAdapter
     private lateinit var targetShowingId:String
-    private lateinit var targetShowingNick:String
     private lateinit var popupMenu:PopupMenu
     private val vModel: ToDoListViewModel by viewModels()
     private var isCurrentUserAdmin = false
     private var isCurrentUserAtHerselfPageOrAdmin = false
 
+    override fun onCreate(savedInstanceState: Bundle?) {
+        targetShowingId = savedInstanceState?.getString("id")?:vModel.authId
+        super.onCreate(savedInstanceState)
+    }
+    override fun onSaveInstanceState(outState: Bundle) {
+        outState.putString("id",targetShowingId)
+        super.onSaveInstanceState(outState)
+    }
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         binding = FragmentTodosBinding.inflate(inflater, container, false)
         initVars()
         inflateToolbarMenu()
         initViewModelObservers()
+        vModel.coldLoad(targetShowingId)
         binding.rcView.setOnScrollChangeListener { _, _, scrollY, _, oldScrollY ->
             if (scrollY == 0) return@setOnScrollChangeListener binding.buttonAddTodo.show()
             if (scrollY > oldScrollY) binding.buttonAddTodo.hide()
@@ -50,10 +58,6 @@ class ToDoListFragment : Fragment(), ToDoArgs {
                 .addToBackStack(null)
                 .replace(R.id.container, ToDoInfoFragment::class.java,args)
                 .commit()
-        }
-        binding.buttonAddTodo.setOnLongClickListener {
-            adapter.addItem(1,Todo())
-            true
         }
         return binding.root
     }
@@ -78,10 +82,7 @@ class ToDoListFragment : Fragment(), ToDoArgs {
 
         vModel.adminIdLiveData.observe(viewLifecycleOwner){
             if (it==null) return@observe
-
             isCurrentUserAdmin =  vModel.authId == it
-            Log.i(TAG,"adminIdLiveData observe string \"$it\" | your id \"${vModel.authId}\" \n" +
-                    "isShowHidedTodo \"$isCurrentUserAtHerselfPageOrAdmin\" | isAdmin \"$isCurrentUserAdmin\"")
         }
         vModel.dataInFirebaseLiveData.observe(viewLifecycleOwner){
             val list = it?.listTodo
@@ -103,10 +104,9 @@ class ToDoListFragment : Fragment(), ToDoArgs {
             }
         }
         vModel.userDataLiveData.observe(viewLifecycleOwner){
-            targetShowingNick = it?.nickname.toString()
             activity?.title = it?.nickname
         }
-        vModel.coldLoad(targetShowingId)
+
     }
     private var mapOfNicknamesAndIds:MutableMap<String,String> = mutableMapOf()
 
@@ -114,14 +114,11 @@ class ToDoListFragment : Fragment(), ToDoArgs {
         adapter = ToDoAdapter(this)
         binding.rcView.adapter = adapter
         initRcViewSwipe()
-        targetShowingId = vModel.authId
-
         popupMenu = PopupMenu(context,binding.buttonAddTodo)
         popupMenu.setOnMenuItemClickListener {
             val tempStr = it.title.toString()
             val key = mapOfNicknamesAndIds[tempStr]!!
             targetShowingId = key
-            targetShowingNick = tempStr
             activity?.title = tempStr
             Log.i(TAG, "in popup menu was selected item \"$key\"")
             vModel.createToDoObserver(key)

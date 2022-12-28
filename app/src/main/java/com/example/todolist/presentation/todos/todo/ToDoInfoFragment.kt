@@ -47,9 +47,7 @@ class ToDoInfoFragment : Fragment() {
         initUi()
         vModel.updateLiveData.observe(viewLifecycleOwner){
             if (it==null)
-                parentFragmentManager.beginTransaction()
-                    .replace(R.id.container,ToDoListFragment())
-                    .commit()
+                parentFragmentManager.popBackStack()
             else
                 Log.wtf(TAG, "updateLiveData: ", it)
         }
@@ -163,7 +161,7 @@ class ToDoInfoFragment : Fragment() {
             val format = SimpleDateFormat("dd.MM.yyyy HH:mm", Locale("ru"))
             val dateStr = "$day $hour:$minutes" // 31.12.2022 23:59
             val timeAsLong = format.parse(dateStr)?.time!! //"31.12.2022 23:59" converting to Long "1672520340000"
-            Log.wtf(TAG,"picked datetime \"$dateStr\" | Long \"$timeAsLong\"")
+            Log.i(TAG,"picked datetime \"$dateStr\" | Long \"$timeAsLong\"")
             binding.deadline.text = dateStr   // text will using for ToDо.deadlineString
             todo.deadlineString = dateStr
             todo.deadlineLong = timeAsLong

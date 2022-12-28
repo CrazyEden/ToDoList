@@ -31,9 +31,15 @@ class FirebaseRepositoryImpl @Inject constructor(
         database.getReference("data").child(getAuthUserUid()).child("userData").child("nickname")
             .setValue(newNickname)
     }
-    override suspend fun getMyData(): Data? =
-        database.getReference("data").child(getAuthUserUid()).get().await().getValue(Data::class.java)
-            ?:localDataRepository.getLocalToDoList()
+    override suspend fun getMyData(): Data? {
+        runCatching {
+            return database.getReference("data").child(getAuthUserUid()).get().await()
+                .getValue(Data::class.java)
+        }.getOrElse {
+            return localDataRepository.getLocalToDoList()
+        }
+    }
+
     override suspend fun getUserData(id:String): UserData? =
         database.getReference("data").child(id)
             .child("userData").get().await().getValue(UserData::class.java)
@@ -65,7 +71,6 @@ class FirebaseRepositoryImpl @Inject constructor(
     override fun createToDoObserver(id:String, dataObserver: DataObserver){
         destroyToDoListener()
         pastId = id
-
         database.getReference("data").child(id).addValueEventListener(object : ValueEventListener {
             init { obj2 = this }
             override fun onDataChange(snapshot: DataSnapshot) {
@@ -91,9 +96,12 @@ class FirebaseRepositoryImpl @Inject constructor(
         val authResult = auth.signInWithCredential(credential)
         authResult.await()
         if (authResult.isSuccessful){
-            if (database.getReference("data").child(auth.currentUser!!.uid).child("userData")
+            val uid = auth.currentUser!!.uid
+            database.getReference("data").child(uid).child("userData")
+                .child("userId").setValue(uid)
+            if (database.getReference("data").child(uid).child("userData")
                     .child("nickname").get().await().getValue(String::class.java) == null){
-                database.getReference("data").child(auth.currentUser!!.uid).child("userData")
+                database.getReference("data").child(uid).child("userData")
                     .child("nickname").setValue(auth.currentUser?.displayName).await()
                 return null
             }
@@ -106,8 +114,19 @@ class FirebaseRepositoryImpl @Inject constructor(
     override suspend fun signInWithEmailAndPassword(email: String, password: String): Exception? {
         val signIn = auth.signInWithEmailAndPassword(email, password)
         signIn.await()
-        return if (signIn.isSuccessful) null
-        else signIn.exception
+        if (signIn.isSuccessful){
+            val uid = auth.currentUser!!.uid
+            database.getReference("data").child(uid).child("userData")
+                .child("userId").setValue(uid)
+            if (database.getReference("data").child(uid).child("userData")
+                    .child("nickname").get().await().getValue(String::class.java) == null){
+                database.getReference("data").child(uid).child("userData")
+                    .child("nickname").setValue(uid).await()
+                return null
+            }
+            return null
+        }
+        else return signIn.exception
     }
 
     override fun sendEmailToRestPassword(email: String) {
