@@ -8,7 +8,6 @@ import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.PopupMenu
 import android.widget.Toast
 import androidx.core.widget.addTextChangedListener
 import androidx.fragment.app.Fragment
@@ -30,7 +29,6 @@ class ToDoInfoFragment : Fragment() {
     private val vModel: ToDoInfoViewModel by viewModels()
     private lateinit var todo: Todo
     private lateinit var id: String
-    private lateinit var popupMenu:PopupMenu
     private var position: Int? = null
     private lateinit var binding:FragmentToDoInfoBinding
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -55,23 +53,13 @@ class ToDoInfoFragment : Fragment() {
             else
                 Log.wtf(TAG, "updateLiveData: ", it)
         }
-
+        todo.secretToDo
         return binding.root
     }
 
-    private fun inflatePopupMenu() {
-        popupMenu = PopupMenu(context,binding.titleTodo)
-        popupMenu.setOnMenuItemClickListener {
-            todo.secretToDo = !todo.secretToDo
-            updateSecretIcon()
-            updatePopupMenu()
-            true
-        }
-        updatePopupMenu()
-    }
 
     private fun initUi(){
-        inflatePopupMenu()
+        updateSecretIcon()
 
         if (todo.deadlineString.isNotEmpty()) {
             binding.deadline.text = todo.deadlineString
@@ -79,19 +67,18 @@ class ToDoInfoFragment : Fragment() {
         }
         if(todo.isCompleted)
             binding.iconTodoCompleted.visibility =View.VISIBLE
-        if (todo.secretToDo)
+        if (todo.secretToDo) {
             binding.iconSecretTodo.visibility = View.VISIBLE
+            binding.switcherTodoSecret.isChecked = true
+        }
 
         if (position == null)
             binding.floatButton.setImageResource(R.drawable.ic_create)
 
         binding.titleTodo.setText(todo.titleToDo)
 
-        binding.titleTodo.addTextChangedListener {
-            todo.titleToDo = it.toString()
-        }
         initAutoHideFOB()
-        createClickListeners()
+        createListeners()
         inflateRecyclerView()
     }
 
@@ -132,12 +119,7 @@ class ToDoInfoFragment : Fragment() {
         }
     }
 
-    private fun createClickListeners(){
-        binding.root.setOnLongClickListener {
-            popupMenu.show()
-            true
-        }
-
+    private fun createListeners(){
         binding.floatButton.setOnClickListener {
             if (todo.titleToDo.isEmpty())
                 return@setOnClickListener showToast("Название не может быть пустым")
@@ -150,22 +132,20 @@ class ToDoInfoFragment : Fragment() {
                 vModel.createNewTodo(todo, id)
         }
 
+        binding.switcherTodoSecret.setOnCheckedChangeListener { _, isChecked ->
+            todo.secretToDo = isChecked
+            updateSecretIcon()
+        }
+
+        binding.titleTodo.addTextChangedListener {
+            todo.titleToDo = it.toString()
+        }
+
         binding.deadline.setOnClickListener {
             openDialogToPickDatetime()
         }
     }
 
-    private fun updatePopupMenu() {
-        popupMenu.menu.clear()
-        if (todo.secretToDo) {
-            binding.iconSecretTodo.visibility = View.VISIBLE
-            popupMenu.menu.add("Сделать задачу общедоступной")
-        }
-        else {
-            binding.iconSecretTodo.visibility = View.GONE
-            popupMenu.menu.add("Сделать задачу секретной")
-        }
-    }
     private fun updateSecretIcon(){
         binding.iconSecretTodo.visibility =
             if (todo.secretToDo) View.VISIBLE else View.GONE

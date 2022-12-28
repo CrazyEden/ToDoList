@@ -55,4 +55,5 @@
     <string name="is_todo_completed">Задача выполнена</string>
     <string name="add_comment">Добавить комментарий</string>
     <string name="___comments___">------Комментарии------</string>
+    <string name="changing_todo_visibility">Изменение видимости задачи</string>
 </resources>

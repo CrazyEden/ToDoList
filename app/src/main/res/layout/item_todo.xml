@@ -30,6 +30,15 @@
             android:layout_gravity="center"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"/>
+        <TextView
+            android:id="@+id/deadline"
+            android:gravity="end"
+            android:layout_gravity="center_vertical"
+            android:textSize="15sp"
+            tools:text="31.12.2222"
+            android:layout_weight="1"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"/>
         <ImageView
             android:contentDescription="@string/is_todo_completed"
             android:id="@+id/icon_todo_completed"
@@ -40,14 +49,6 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"/>
 
-        <TextView
-            android:id="@+id/deadline"
-            android:gravity="end"
-            android:textSize="15sp"
-            tools:text="31.12.2222"
-            android:layout_weight="1"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"/>
     </LinearLayout>
 
     <androidx.recyclerview.widget.RecyclerView
@@ -63,9 +64,8 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
-        android:isScrollContainer="false"
-        android:nestedScrollingEnabled="true"
-        tools:listitem="@layout/item_comment"/>
+        tools:listitem="@layout/item_comment"
+        tools:itemCount="5"/>
 
 
 </LinearLayout>

@@ -41,6 +41,17 @@
                     tools:visibility="visible"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"/>
+
+                <TextView
+                    android:id="@+id/deadline"
+                    android:gravity="end"
+                    android:textSize="25sp"
+                    android:textStyle="bold"
+                    android:text="@string/to_select_a_deadline"
+                    android:layout_gravity="center_vertical"
+                    android:layout_weight="1"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"/>
                 <ImageView
                     android:contentDescription="@string/is_todo_completed"
                     android:id="@+id/icon_todo_completed"
@@ -50,19 +61,14 @@
                     android:layout_gravity="center"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"/>
-
-                <TextView
-                    android:id="@+id/deadline"
-                    android:gravity="end"
-                    android:textSize="25sp"
-                    android:textStyle="bold"
-                    android:text="@string/to_select_a_deadline"
-                    android:layout_weight="1"
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"/>
             </LinearLayout>
 
-
+            <androidx.appcompat.widget.SwitchCompat
+                android:id="@+id/switcher_todo_secret"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="end"
+                android:text="@string/changing_todo_visibility"/>
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content">
@@ -93,6 +99,12 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"/>
 
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center_horizontal"
+                android:lines="1"
+                android:text="@string/___comments___"/>
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content">
@@ -113,12 +125,7 @@
                     android:layout_width="48dp"
                     android:layout_height="48dp"/>
             </LinearLayout>
-            <TextView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:gravity="center_horizontal"
-                android:lines="1"
-                android:text="@string/___comments___"/>
+
             <androidx.recyclerview.widget.RecyclerView
                 android:id="@+id/commentsLV"
                 tools:listitem="@layout/item_comment"
