@@ -31,14 +31,10 @@ class FirebaseRepositoryImpl @Inject constructor(
         database.getReference("data").child(getAuthUserUid()).child("userData").child("nickname")
             .setValue(newNickname)
     }
-    override suspend fun getMyData(): Data? {
-        runCatching {
-            return database.getReference("data").child(getAuthUserUid()).get().await()
-                .getValue(Data::class.java)
-        }.getOrElse {
-            return localDataRepository.getLocalToDoList()
-        }
-    }
+    override suspend fun getMyData(): Data? =
+        database.getReference("data").child(getAuthUserUid()).get().await()
+            .getValue(Data::class.java)
+
 
     override suspend fun getUserData(id:String): UserData? =
         database.getReference("data").child(id)
@@ -76,9 +72,9 @@ class FirebaseRepositoryImpl @Inject constructor(
             override fun onDataChange(snapshot: DataSnapshot) {
                 val data = snapshot.getValue(Data::class.java)
                 dataObserver(data)
-                if(data?.userData?.userId == getAuthUserUid()){
+                if(id == getAuthUserUid()){
                     val json = Gson().toJson(data)
-                    localDataRepository.setLocalToDoList(json)
+                    localDataRepository.setLocalData(json)
                 }
             }
             override fun onCancelled(error: DatabaseError) {

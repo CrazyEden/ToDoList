@@ -8,6 +8,7 @@ import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import com.example.todolist.R
+import com.example.todolist.data.model.Data
 import com.example.todolist.databinding.DialogChangeNicknameBinding
 import com.example.todolist.databinding.FragmentUserProfileBinding
 import com.example.todolist.presentation.auth.SignInFragment
@@ -23,19 +24,9 @@ class UserProfileFragment : Fragment() {
         savedInstanceState: Bundle?
     ): View {
         binding = FragmentUserProfileBinding.inflate(inflater,container,false)
+        updateUi(vModel.getLocalData())
         vModel.myDataLiveData.observe(viewLifecycleOwner){it->
-            val countOfTodos = getString(R.string.count_of_todo) + " ${it?.listTodo?.size}"
-            binding.countOfToDos.text = countOfTodos
-            var endedTodo = 0
-            it?.listTodo?.forEach { if (it.isCompleted) endedTodo++ }
-            val endedTodoStr = getString(R.string.count_of_ended_todo) + " $endedTodo"
-            binding.countOfEndedToDos.text = endedTodoStr
-            val toDoInWork = it?.listTodo?.size?.minus(endedTodo) ?: 0
-            val toDoInWorkStr = getString(R.string.count_of_todo_in_progress)+" $toDoInWork"
-            binding.countOfToDosInWork.text = toDoInWorkStr
-            binding.userNickName.text = it?.userData?.nickname ?: getString(R.string.you_havent_nickname)
-            val countNotes = getString(R.string.count_of_notes) + " ${it?.listNotes?.size}"
-            binding.countOfNotes.text = countNotes
+            updateUi(it)
         }
         binding.buttonSignOut.setOnClickListener {
             vModel.signOut()
@@ -68,6 +59,21 @@ class UserProfileFragment : Fragment() {
                 .show()
         }
         return binding.root
+    }
+
+    private fun updateUi(data: Data?) {
+        val countOfTodos = getString(R.string.count_of_todo) + " ${data?.listTodo?.size}"
+        binding.countOfToDos.text = countOfTodos
+        var endedTodo = 0
+        data?.listTodo?.forEach { if (it.isCompleted) endedTodo++ }
+        val endedTodoStr = getString(R.string.count_of_ended_todo) + " $endedTodo"
+        binding.countOfEndedToDos.text = endedTodoStr
+        val toDoInWork = data?.listTodo?.size?.minus(endedTodo) ?: 0
+        val toDoInWorkStr = getString(R.string.count_of_todo_in_progress)+" $toDoInWork"
+        binding.countOfToDosInWork.text = toDoInWorkStr
+        binding.userNickName.text = data?.userData?.nickname ?: getString(R.string.you_havent_nickname)
+        val countNotes = getString(R.string.count_of_notes) + " ${data?.listNotes?.size}"
+        binding.countOfNotes.text = countNotes
     }
 
 }

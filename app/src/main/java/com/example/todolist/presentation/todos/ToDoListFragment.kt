@@ -112,6 +112,7 @@ class ToDoListFragment : Fragment(), ToDoArgs {
 
     private fun initVars(){
         adapter = ToDoAdapter(this)
+        adapter.setData(vModel.getLocalTodoList())
         binding.rcView.adapter = adapter
         initRcViewSwipe()
         popupMenu = PopupMenu(context,binding.buttonAddTodo)

@@ -40,7 +40,7 @@ class ToDoAdapter(private val toDoArgs: ToDoArgs):RecyclerView.Adapter<ToDoAdapt
         toDoArgs.listWasUpdated(listToDo)
     }
 
-    private var isShowSecretTodo:Boolean = false
+    private var isShowSecretTodo:Boolean = true
     fun setPermission(isShowSecretTodo:Boolean) {
         this.isShowSecretTodo = isShowSecretTodo
     }

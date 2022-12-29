@@ -32,13 +32,13 @@ class NotesFragment : Fragment(),NoteAdapterInt {
         binding = FragmentNotesBinding.inflate(inflater,container,false)
 
         val adapter = NotesAdapter(this)
+        adapter.setData(vModel.getLocalNotes())
         binding.rcViewNotes.adapter = adapter
         vModel.myDataLiveData.observe(viewLifecycleOwner){
             adapter.setData(it?.listNotes)
         }
 
         binding.buttonAddNote.setOnClickListener {
-
             parentFragmentManager.beginTransaction()
                 .addToBackStack(null)
                 .replace(R.id.container, NoteInfoFragment())

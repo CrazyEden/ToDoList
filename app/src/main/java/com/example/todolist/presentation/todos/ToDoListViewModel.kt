@@ -8,6 +8,7 @@ import com.example.todolist.data.model.Data
 import com.example.todolist.data.model.Todo
 import com.example.todolist.data.model.UserData
 import com.example.todolist.data.repositories.FirebaseRepository
+import com.example.todolist.data.repositories.LocalDataRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -15,7 +16,8 @@ import javax.inject.Inject
 
 @HiltViewModel
 class ToDoListViewModel @Inject constructor(
-    private val firebaseRepository: FirebaseRepository
+    private val firebaseRepository: FirebaseRepository,
+    private val localDataRepository: LocalDataRepository
 ):ViewModel() {
 
     private val _adminIdLiveData = MutableLiveData<String?>()
@@ -63,4 +65,7 @@ class ToDoListViewModel @Inject constructor(
     fun updateList(id:String,list: MutableList<Todo>) {
         firebaseRepository.uploadToDoList(id,list)
     }
+
+    fun getLocalTodoList(): List<Todo>? =
+        localDataRepository.getLocalData()?.listTodo
 }
