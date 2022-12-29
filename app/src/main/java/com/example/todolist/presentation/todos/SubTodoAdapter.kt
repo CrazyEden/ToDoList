@@ -12,10 +12,11 @@ import com.example.todolist.presentation.activity.TAG
 
 typealias SubTodoWasUpdated = (list:MutableList<SubTodo>) -> Unit
 
-class SubTodoAdapter(val subTodoWasUpdated:SubTodoWasUpdated) : RecyclerView.Adapter<SubTodoAdapter.SubTodoViewHolder>() {
+class SubTodoAdapter(
+    var list:MutableList<SubTodo> = mutableListOf(),
+    val subTodoWasUpdated:SubTodoWasUpdated
+    ) : RecyclerView.Adapter<SubTodoAdapter.SubTodoViewHolder>() {
     class SubTodoViewHolder(val binding:SubTodoBinding):RecyclerView.ViewHolder(binding.root)
-
-    private var list = mutableListOf<SubTodo>()
 
     @SuppressLint("NotifyDataSetChanged")
     fun setData(subTodo: List<SubTodo>?){

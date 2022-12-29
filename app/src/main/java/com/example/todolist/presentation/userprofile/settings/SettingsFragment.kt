@@ -1,6 +1,5 @@
 package com.example.todolist.presentation.userprofile.settings
 
-import android.graphics.drawable.ColorDrawable
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -24,39 +23,23 @@ class SettingsFragment : Fragment() {
     ): View {
         binding = FragmentSettingsBinding.inflate(inflater,container,false)
 
-        binding.background.apply {
-            background = ColorDrawable(vModel.getBackgroundColor())
-            setOnClickListener {
-                pickColor(vModel.getBackgroundColor()){
-                    this.background = ColorDrawable(it)
-                    vModel.setBackgroundColor(it)
-                }
+        binding.background.setOnClickListener {
+            pickColor(vModel.getBackgroundColor()){
+                vModel.setBackgroundColor(it)
             }
         }
 
-        binding.toolbar.apply {
-            background = ColorDrawable(vModel.getToolbarColor())
-            setOnClickListener{
-                pickColor(vModel.getToolbarColor()){
-                    this.background = ColorDrawable(it)
-                    vModel.setToolbarBackgroundColor(it)
-                }
+
+        binding.toolbar.setOnClickListener{
+            pickColor(vModel.getToolbarColor()){
+                vModel.setToolbarBackgroundColor(it)
             }
         }
 
-        binding.window.apply {
-            background = ColorDrawable(vModel.getWindowColor())
-            setOnClickListener {
-                pickColor(vModel.getWindowColor()){
-                    this.background = ColorDrawable(it)
-                    vModel.setWindowColor(it)
-                }
-            }
-        }
-        binding.switcher.apply {
-            isChecked = vModel.getDarkMode()
-            setOnCheckedChangeListener { _, isChecked ->
-                vModel.setDarkMode(isChecked)
+
+        binding.window.setOnClickListener {
+            pickColor(vModel.getWindowColor()){
+                vModel.setWindowColor(it)
             }
         }
 

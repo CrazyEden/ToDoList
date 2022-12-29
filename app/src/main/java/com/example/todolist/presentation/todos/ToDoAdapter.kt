@@ -52,9 +52,8 @@ class ToDoAdapter(private val toDoArgs: ToDoArgs):RecyclerView.Adapter<ToDoAdapt
     }
 
     override fun onBindViewHolder(holder: ToDoViewHolder, position: Int) {
-        Log.i(TAG,"starting inflate item, position \"$position\"")
         val item= listToDo[position]
-
+        val param = holder.binding.root.layoutParams
         if (!isShowSecretTodo && item.secretToDo){ //hide item if no access
             holder.binding.root.visibility = View.GONE
             holder.binding.root.layoutParams = LayoutParams(0,0)
@@ -62,30 +61,26 @@ class ToDoAdapter(private val toDoArgs: ToDoArgs):RecyclerView.Adapter<ToDoAdapt
             return
         }else{
             holder.binding.root.visibility = View.VISIBLE
-            holder.binding.root.layoutParams = LayoutParams(LayoutParams.MATCH_PARENT,LayoutParams.WRAP_CONTENT)
+            holder.binding.root.layoutParams = param
+            Log.i(TAG,"item was inflated, position \"$position\"")
         }
 
-        if(item.secretToDo) holder.binding.iconSecretTodo.visibility = View.VISIBLE
-        else holder.binding.iconSecretTodo.visibility = View.GONE
+        holder.binding.iconSecretTodo.visibility =
+            if(item.secretToDo) View.VISIBLE else View.GONE
 
-        if (item.isCompleted) holder.binding.iconTodoCompleted.visibility = View.VISIBLE
-        else holder.binding.iconTodoCompleted.visibility = View.GONE
+        holder.binding.iconTodoCompleted.visibility =
+            if (item.isCompleted) View.VISIBLE else View.GONE
 
-        val adapter = SubTodoAdapter(){it->
-            if (it.all { it.isCompleted }) {
-                listToDo[position].isCompleted = true
-                holder.binding.iconTodoCompleted.visibility = View.VISIBLE
-            }else{
-                listToDo[position].isCompleted = false
-                holder.binding.iconTodoCompleted.visibility = View.GONE
+        holder.binding.rcViewSubTodo.adapter = SubTodoAdapter(item.subTodo){subTodoList->
+            listToDo[position].isCompleted = subTodoList.all { it.isCompleted }.also {
+                if (it)
+                    holder.binding.iconTodoCompleted.visibility = View.VISIBLE
+                else
+                    holder.binding.iconTodoCompleted.visibility = View.GONE
             }
-            listToDo[position].subTodo = it
+            listToDo[position].subTodo = subTodoList
             toDoArgs.itemWasUpdated(listToDo[position],position)
         }
-        adapter.setData(item.subTodo)
-        holder.binding.rcViewSubTodo.adapter = adapter
-
-
         holder.binding.commentsListView.adapter = CommentsAdapter(item.comments)
 
         holder.binding.titleTodo.apply {
@@ -93,10 +88,9 @@ class ToDoAdapter(private val toDoArgs: ToDoArgs):RecyclerView.Adapter<ToDoAdapt
             setOnClickListener { toDoArgs.openToDoItem(item,position) }
         }
 
-
+        val timeLeftBeforeDeadline = item.deadlineLong - ToDoListFragment.getCurrentTime()
         holder.binding.deadline.apply {
             text = item.deadlineString
-            val timeLeftBeforeDeadline = item.deadlineLong - ToDoListFragment.getCurrentTime()
             setTextColor(when{
                 timeLeftBeforeDeadline < 1 -> Color.BLACK                                //deadline was left
                 timeLeftBeforeDeadline > 7889229000 -> Color.GREEN                       //3 month+

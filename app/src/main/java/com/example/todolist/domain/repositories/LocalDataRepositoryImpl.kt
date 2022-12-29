@@ -12,7 +12,7 @@ class LocalDataRepositoryImpl @Inject constructor(
 ): LocalDataRepository {
 
     override fun getBackgroundColor(): Int =
-        sharedPreferences.getInt(sharedPreferencesBackgroundColorKey,Color.WHITE)
+        sharedPreferences.getInt(sharedPreferencesBackgroundColorKey,Color.DKGRAY)
     override fun setBackgroundColor(color:Int): Unit =
         sharedPreferences.edit().putInt(sharedPreferencesBackgroundColorKey,color).apply()
 
@@ -27,19 +27,16 @@ class LocalDataRepositoryImpl @Inject constructor(
         sharedPreferences.edit().putInt(sharedPreferencesWindowColorKey,color).apply()
 
     override fun getLocalData(): Data? {
-        val json = sharedPreferences.getString("history",null)
+        val json = sharedPreferences.getString(sharedPreferencesData,null)
         return Gson().fromJson(json, Data::class.java)
     }
-    override fun setLocalData(json:String): Unit = sharedPreferences.edit().putString("history",json).apply()
-    override fun getIsDarkMode(): Boolean =
-        sharedPreferences.getBoolean(sharedPreferencesIsDarkMode,true)
+    override fun setLocalData(json:String): Unit =
+        sharedPreferences.edit().putString(sharedPreferencesData,json).apply()
 
-    override fun setIsDarkMode(isOn: Boolean) =
-        sharedPreferences.edit().putBoolean(sharedPreferencesIsDarkMode,isOn).apply()
 
 
     private val sharedPreferencesBackgroundColorKey = "BackgroundColor"
     private val sharedPreferencesToolbarColorKey = "ToolbarColor"
     private val sharedPreferencesWindowColorKey = "Window"
-    private val sharedPreferencesIsDarkMode = "DarkMode"
+    private val sharedPreferencesData = "history"
 }

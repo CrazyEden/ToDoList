@@ -14,7 +14,4 @@ interface LocalDataRepository {
 
     fun getLocalData(): Data?
     fun setLocalData(json:String)
-
-    fun getIsDarkMode(): Boolean
-    fun setIsDarkMode(isOn:Boolean)
 }

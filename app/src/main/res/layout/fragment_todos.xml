@@ -7,11 +7,10 @@
     android:layout_height="match_parent"
     tools:context=".presentation.todos.ToDoListFragment">
 
-<androidx.recyclerview.widget.RecyclerView
+    <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/rcView"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:nestedScrollingEnabled="false"
         app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
         tools:listitem="@layout/item_todo" />
 

@@ -6,7 +6,6 @@ import android.os.Bundle
 import android.view.View
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
-import androidx.appcompat.app.AppCompatDelegate
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentManager
 import com.example.todolist.R
@@ -31,9 +30,9 @@ class MainActivity : AppCompatActivity(){
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityMainBinding.inflate(layoutInflater)
-        setContentView(binding.root)
         initSafetyNet()
         iniAppColors()
+        setContentView(binding.root)
         registerFragmentLifecycleListener()
         NetworkChangeReceiver(this, binding.imageNoEthernet)
         binding.bottomNavMenu.setOnItemSelectedListener {
@@ -79,10 +78,7 @@ class MainActivity : AppCompatActivity(){
         supportActionBar?.setBackgroundDrawable(ColorDrawable(vModel.getToolbarColor()))
         binding.container.setBackgroundColor(vModel.getBackgroundColor())
         window.setBackgroundDrawable(ColorDrawable(vModel.getWindowColor()))
-        if (vModel.getDarkMode())
-            AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_YES)
-        else
-            AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO)
+
         vModel.toolbarColorLiveData.observe(this){
             supportActionBar?.setBackgroundDrawable(ColorDrawable(it))
         }
@@ -92,12 +88,7 @@ class MainActivity : AppCompatActivity(){
         vModel.windowColorLiveData.observe(this){
             window.setBackgroundDrawable(ColorDrawable(it))
         }
-        vModel.darkModeLiveData.observe(this){
-            if (vModel.getDarkMode())
-                AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_YES)
-            else
-                AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO)
-        }
+
     }
 
     private fun initSafetyNet(){

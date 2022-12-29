@@ -51,9 +51,7 @@ class ToDoListFragment : Fragment(), ToDoArgs {
             else binding.buttonAddTodo.show()
         }
         binding.buttonAddTodo.setOnClickListener {
-            val args = bundleOf(
-                ToDoInfoFragment.ID_KEY to targetShowingId,
-            )
+            val args = bundleOf(ToDoInfoFragment.ID_KEY to targetShowingId,)
             parentFragmentManager.beginTransaction()
                 .addToBackStack(null)
                 .replace(R.id.container, ToDoInfoFragment::class.java,args)
