@@ -35,7 +35,7 @@ class MainActivity : AppCompatActivity(){
         initSafetyNet()
         iniAppColors()
         registerFragmentLifecycleListener()
-        registerEthernetAccessListener()
+        NetworkChangeReceiver(this, binding.imageNoEthernet)
         binding.bottomNavMenu.setOnItemSelectedListener {
             when(it.itemId){
                 R.id.listTodo_menu->{ openFragment(ToDoListFragment()) }
@@ -49,9 +49,6 @@ class MainActivity : AppCompatActivity(){
         else openFragment(ToDoListFragment())
     }
 
-    private fun registerEthernetAccessListener() {
-        NetworkChangeReceiver(this,binding.imageNoEthernet)
-    }
 
     private fun registerFragmentLifecycleListener() {
         //auto hide bottom navigation bar

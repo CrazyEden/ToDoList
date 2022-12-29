@@ -6,6 +6,7 @@ import android.net.Network
 import android.net.NetworkCapabilities
 import android.net.NetworkRequest
 import android.view.View
+import kotlinx.coroutines.*
 
 
 class NetworkChangeReceiver(context: Context, private val viewForHiding:View)
@@ -20,18 +21,33 @@ class NetworkChangeReceiver(context: Context, private val viewForHiding:View)
         connectivityManager.registerNetworkCallback(networkRequest, this)
     }
 
+    @OptIn(DelicateCoroutinesApi::class)
     override fun onAvailable(network: Network) {
-        viewForHiding.visibility = View.GONE
+        GlobalScope.launch {
+            withContext(Dispatchers.Main){
+                viewForHiding.visibility = View.GONE
+            }
+        }
         super.onAvailable(network)
     }
 
+    @OptIn(DelicateCoroutinesApi::class)
     override fun onLosing(network: Network, maxMsToLive: Int) {
-        viewForHiding.visibility = View.VISIBLE
+        GlobalScope.launch {
+            withContext(Dispatchers.Main){
+                viewForHiding.visibility = View.VISIBLE
+            }
+        }
         super.onLosing(network, maxMsToLive)
     }
 
+    @OptIn(DelicateCoroutinesApi::class)
     override fun onLost(network: Network) {
-        viewForHiding.visibility = View.VISIBLE
+        GlobalScope.launch {
+            withContext(Dispatchers.Main){
+                viewForHiding.visibility = View.VISIBLE
+            }
+        }
         super.onLost(network)
     }
 }
