@@ -6,7 +6,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    tools:context=".ui.loginbyemailfragment.LogInFragment">
+    tools:context=".presentation.auth.loginbyemailfragment.LogInFragment">
     <com.google.android.material.bottomnavigation.BottomNavigationView
         android:id="@+id/topNavMenu"
         android:background="@color/cardview_shadow_start_color"

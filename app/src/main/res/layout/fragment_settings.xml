@@ -5,28 +5,35 @@
     android:gravity="center"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".ui.SettingsFragment">
+    tools:context=".presentation.userprofile.settings.SettingsFragment">
 
 
     <TextView
         android:id="@+id/toolbar"
-        android:text="@string/toolbar_color"
-        android:textSize="40sp"
         android:layout_width="wrap_content"
-        android:layout_height="wrap_content"/>
+        android:layout_height="wrap_content"
+        android:foreground="@drawable/transparent_frame"
+        android:padding="7dp"
+        android:text="@string/toolbar_color"
+        android:textSize="40sp" />
+
     <TextView
         android:id="@+id/background"
-        android:text="@string/background_color"
-        android:textSize="40sp"
-        android:layout_marginTop="10dp"
         android:layout_width="wrap_content"
-        android:layout_height="wrap_content"/>
+        android:layout_height="wrap_content"
+        android:layout_marginTop="10dp"
+        android:foreground="@drawable/transparent_frame"
+        android:padding="7dp"
+        android:text="@string/background_color"
+        android:textSize="40sp" />
+
     <TextView
         android:id="@+id/window"
-        android:text="@string/window_color"
-        android:textSize="40sp"
-        android:layout_marginTop="10dp"
         android:layout_width="wrap_content"
-        android:layout_height="wrap_content"/>
-
+        android:layout_height="wrap_content"
+        android:layout_marginTop="10dp"
+        android:foreground="@drawable/transparent_frame"
+        android:padding="7dp"
+        android:text="@string/window_color"
+        android:textSize="40sp" />
 </LinearLayout>

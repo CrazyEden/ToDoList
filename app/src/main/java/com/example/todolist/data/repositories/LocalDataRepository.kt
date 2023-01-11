@@ -12,6 +12,6 @@ interface LocalDataRepository {
     fun getWindowColor(): Int
     fun setWindowColor(color:Int)
 
-    fun getLocalToDoList(): Data?
-    fun setLocalToDoList(json:String)
+    fun getLocalData(): Data?
+    fun setLocalData(json:String)
 }
